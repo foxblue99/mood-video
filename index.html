@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>心情视频 · 老年人AI短视频社交APP</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:"PingFang SC","Microsoft YaHei",sans-serif;background:#FCF8F2;color:#5C4A32;min-height:100vh}
+.container{max-width:900px;margin:0 auto;padding:40px 24px}
+.hero{text-align:center;padding:60px 0 40px}
+.hero h1{font-size:36px;color:#5C4A32;margin-bottom:12px}
+.hero .subtitle{font-size:18px;color:#B8A88A}
+.hero .desc{font-size:15px;color:#8B7355;margin-top:16px;line-height:1.8;max-width:600px;margin-left:auto;margin-right:auto}
+.features{display:flex;gap:16px;flex-wrap:wrap;justify-content:center;margin:32px 0}
+.feature-badge{background:#FFF8F0;border:1px solid rgba(196,162,101,.15);border-radius:20px;padding:8px 20px;font-size:14px;color:#8B7355}
+.prototype-section{margin:48px 0}
+.prototype-section h2{font-size:22px;color:#5C4A32;text-align:center;margin-bottom:24px}
+.prototype-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px}
+.prototype-card{background:#FFF8F0;border:1px solid rgba(196,162,101,.12);border-radius:16px;padding:24px;text-align:center;text-decoration:none;transition:all .2s;cursor:pointer;display:block}
+.prototype-card:hover{background:#FDF0E3;transform:translateY(-2px);box-shadow:0 4px 12px rgba(139,115,85,.08)}
+.prototype-card .version{font-size:12px;color:#B8A88A;font-weight:600;margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px}
+.prototype-card .name{font-size:17px;color:#5C4A32;font-weight:600;margin-bottom:6px}
+.prototype-card .badge{padding:3px 10px;border-radius:10px;font-size:11px;font-weight:600;display:inline-block}
+.badge-v4{background:#FDF0E3;color:#E8A87C}
+.badge-v3{background:#FFF0E8;color:#C4A265}
+.badge-v2{background:#E8F5E9;color:#66BB6A}
+.badge-v1{background:#F5F0E8;color:#8B7355}
+.cta{text-align:center;margin:48px 0 20px}
+.cta a{display:inline-block;background:#E8A87C;color:#fff;padding:14px 36px;border-radius:12px;font-size:16px;font-weight:600;text-decoration:none;transition:all .2s}
+.cta a:hover{background:#D4956A}
+.links{text-align:center;margin:20px 0;font-size:14px;color:#B8A88A}
+.links a{color:#E8A87C;text-decoration:none}
+.links a:hover{text-decoration:underline}
+.footer{text-align:center;margin-top:40px;padding-top:24px;border-top:1px solid rgba(139,115,85,.08);font-size:13px;color:#B8A88A}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="hero">
+    <h1>🎬 心情视频</h1>
+    <div class="subtitle">老年人AI短视频社交APP</div>
+    <div class="desc">
+      专为老年人设计的AI心情短视频应用。支持一句话、一张照片、一段视频生成个性化短视频。
+      内置AI数字伴侣「小暖」，提供24小时陪聊、健康打卡、用药提醒、GPS防走失定位、老友圈等全功能。
+    </div>
+    <div class="features">
+      <span class="feature-badge">🤖 AI数字伴侣</span>
+      <span class="feature-badge">🎥 视频生成</span>
+      <span class="feature-badge">❤️ 健康打卡</span>
+      <span class="feature-badge">📍 GPS防走失</span>
+      <span class="feature-badge">👥 老友圈</span>
+      <span class="feature-badge">📱 子女端同步</span>
+      <span class="feature-badge">🔴 SOS求助</span>
+      <span class="feature-badge">💊 用药提醒</span>
+    </div>
+  </div>
+
+  <div class="prototype-section">
+    <h2>📱 交互原型演示</h2>
+    <div class="prototype-cards">
+      <a class="prototype-card" href="mood-video-prototypes/V4_AI%E9%99%AA%E4%BC%B4%E7%89%88.html">
+        <div class="version">Latest · V4</div>
+        <div class="name">AI陪伴版</div>
+        <span class="badge badge-v4">小暖 + 视频 + 打卡 + GPS</span>
+      </a>
+      <a class="prototype-card" href="mood-video-prototypes/V3_%E5%81%A5%E5%BA%B7%E5%90%8C%E6%AD%A5_GPS%E5%AE%9A%E4%BD%8D%E7%89%88.html">
+        <div class="version">V3</div>
+        <div class="name">健康同步 + GPS定位版</div>
+        <span class="badge badge-v3">双端 + 告警 + SOS</span>
+      </a>
+      <a class="prototype-card" href="mood-video-prototypes/V2_%E6%B8%A9%E6%9A%96%E7%89%88APP%E5%8E%9F%E5%9E%8B.html">
+        <div class="version">V2</div>
+        <div class="name">温暖版</div>
+        <span class="badge badge-v2">暖色UI + 健康 + 老友圈</span>
+      </a>
+      <a class="prototype-card" href="mood-video-prototypes/APP%E5%8E%9F%E5%9E%8B%E4%BA%A4%E4%BA%92%E6%BC%94%E7%A4%BA.html">
+        <div class="version">V1</div>
+        <div class="name">初始原型</div>
+        <span class="badge badge-v1">MVP概念验证</span>
+      </a>
+    </div>
+  </div>
+
+  <div class="cta">
+    <a href="https://github.com/foxblue99/mood-video">⭐ 在 GitHub 上查看源码</a>
+  </div>
+
+  <div class="links">
+    📄 <a href="https://github.com/foxblue99/mood-video/blob/main/mood-video-prototypes/%E4%BA%A7%E5%93%81%E8%A7%84%E5%88%92%E6%96%B9%E6%A1%88.md">产品规划方案</a> ·
+    <a href="https://github.com/foxblue99/mood-video/blob/main/mood-video-prototypes/%E5%B7%A5%E7%A8%8B%E5%AE%9E%E6%96%BD%E8%AE%A1%E5%88%92_%E4%BB%8E%E5%8E%9F%E5%9E%8B%E5%88%B0%E4%B8%8A%E7%BA%BF.md">工程实施计划</a> ·
+    <a href="https://github.com/foxblue99/mood-video/blob/main/mood-video-prototypes/%E5%90%88%E4%BD%9C%E4%BC%99%E4%BC%B4%E6%8B%9B%E5%8B%9F%E6%96%B9%E6%A1%88.md">招募合作伙伴</a>
+  </div>
+
+  <div class="footer">
+    Powered by WorkBuddy AI · foxblue99/mood-video · 2026
+  </div>
+</div>
+</body>
+</html>

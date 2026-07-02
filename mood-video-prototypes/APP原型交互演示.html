@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>心情视频 — 老年人AI短视频APP原型</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:#e8eaf0;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;min-height:100vh;padding:20px;font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Hiragino Sans GB',sans-serif;}
+h1.title{font-size:18px;font-weight:500;color:#444;margin-bottom:16px;text-align:center;letter-spacing:0.5px;}
+.device-wrap{display:flex;gap:24px;align-items:flex-start;flex-wrap:wrap;justify-content:center;}
+.phone-frame{width:340px;background:#111;border-radius:40px;border:3px solid #333;box-shadow:0 12px 40px rgba(0,0,0,0.35);overflow:hidden;position:relative;}
+.notch{width:120px;height:28px;background:#111;border-radius:0 0 18px 18px;position:absolute;top:0;left:50%;transform:translateX(-50%);z-index:100;}
+.status-bar{background:#111;color:#ccc;font-size:11px;padding:10px 24px 6px;display:flex;justify-content:space-between;position:relative;z-index:50;}
+.screen{background:#f5f0e8;height:680px;overflow:hidden;position:relative;}
+.page{position:absolute;top:0;left:0;width:100%;height:680px;display:none;flex-direction:column;overflow-y:auto;overflow-x:hidden;}
+.page.active{display:flex;}
+
+/* Header */
+.header{padding:20px 16px 16px;color:white;text-align:center;flex-shrink:0;}
+.header.orange{background:#ff7043;}
+.header.orange-sm{background:#ff7043;padding:14px 16px;display:flex;align-items:center;gap:10px;}
+.back-btn{background:rgba(255,255,255,0.2);border:none;color:white;border-radius:8px;padding:7px 13px;font-size:15px;cursor:pointer;flex-shrink:0;}
+.header-title{font-size:20px;font-weight:500;}
+.header-sub{font-size:13px;opacity:0.8;margin-top:5px;}
+
+/* 首页特有 */
+.mood-strip{display:flex;gap:8px;padding:10px 12px;overflow-x:auto;flex-shrink:0;}
+.mood-strip::-webkit-scrollbar{display:none;}
+.mood-chip{flex-shrink:0;padding:8px 16px;border-radius:20px;font-size:15px;font-weight:500;border:none;cursor:pointer;transition:box-shadow 0.15s;}
+.card{margin:8px 12px;background:white;border-radius:16px;padding:16px;flex-shrink:0;}
+.card-title{font-size:13px;color:#888;margin-bottom:10px;}
+textarea.big-input{width:100%;border:1.5px solid #e0d8cc;border-radius:12px;padding:12px;font-size:17px;resize:none;line-height:1.6;color:#333;background:white;}
+textarea.big-input:focus{outline:none;border-color:#ff7043;}
+.input-row{display:flex;gap:8px;margin-top:10px;}
+.icon-btn{flex:1;padding:10px 4px;border-radius:12px;border:1.5px solid #e0d8cc;background:white;font-size:12px;font-weight:500;cursor:pointer;text-align:center;color:#555;transition:border-color 0.15s;}
+.icon-btn:hover{border-color:#ff7043;color:#ff7043;}
+.icon-btn .ico{display:block;font-size:22px;margin-bottom:3px;}
+.big-btn{margin:8px 12px;padding:16px;background:#ff7043;color:white;border:none;border-radius:16px;font-size:18px;font-weight:500;cursor:pointer;width:calc(100% - 24px);flex-shrink:0;transition:background 0.15s;}
+.big-btn:hover{background:#f4511e;}
+.sec-label{font-size:13px;color:#888;padding:6px 12px 6px;font-weight:500;flex-shrink:0;}
+.recent-item{margin:0 12px 8px;background:white;border-radius:12px;padding:10px 12px;display:flex;align-items:center;gap:10px;cursor:pointer;flex-shrink:0;}
+.ri-thumb{width:46px;height:46px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;}
+.ri-title{font-size:15px;font-weight:500;color:#333;}
+.ri-sub{font-size:12px;color:#888;margin-top:2px;}
+
+/* 照片网格 */
+.photo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:0 16px 8px;}
+.photo-cell{aspect-ratio:1;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:30px;cursor:pointer;transition:opacity 0.15s;}
+.photo-cell:hover{opacity:0.8;}
+.upload-zone{margin:16px;border:2px dashed #d0c8bc;border-radius:16px;padding:28px 16px;text-align:center;cursor:pointer;background:white;}
+.upload-zone:hover{border-color:#ff7043;}
+.upload-icon{font-size:48px;margin-bottom:10px;}
+.upload-title{font-size:18px;font-weight:500;color:#333;margin-bottom:4px;}
+.upload-sub{font-size:13px;color:#888;}
+.tip-box{margin:0 16px;background:#fff3e0;border-radius:12px;padding:12px 14px;}
+.tip-title{font-size:14px;font-weight:500;color:#e65100;margin-bottom:4px;}
+.tip-body{font-size:13px;color:#666;line-height:1.7;}
+
+/* 录音 */
+.rec-center{padding:20px 16px;display:flex;flex-direction:column;align-items:center;}
+.rec-btn{width:88px;height:88px;border-radius:50%;background:#ff7043;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;cursor:pointer;font-size:36px;border:none;transition:background 0.2s;}
+.rec-btn.recording{background:#d32f2f;}
+.rec-status{font-size:17px;font-weight:500;color:#333;text-align:center;}
+.rec-hint{font-size:13px;color:#888;margin-top:6px;text-align:center;}
+.rec-text-box{width:100%;margin-top:14px;background:#f5f0e8;border-radius:10px;padding:12px;font-size:16px;color:#555;min-height:56px;line-height:1.7;display:none;}
+
+/* 生成中 */
+.gen-steps{padding:16px 16px 8px;flex-shrink:0;}
+.gen-step{display:flex;align-items:flex-start;gap:14px;margin-bottom:16px;}
+.step-dot{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:500;flex-shrink:0;transition:background 0.3s;}
+.step-dot.done{background:#4caf50;color:white;}
+.step-dot.running{background:#ff7043;color:white;}
+.step-dot.wait{background:#e0d8cc;color:#aaa;}
+.step-label{font-size:15px;font-weight:500;color:#333;line-height:1.4;}
+.step-sub{font-size:12px;color:#888;margin-top:2px;}
+.prog-wrap{margin:4px 16px 0;background:#e0d8cc;border-radius:8px;height:12px;overflow:hidden;flex-shrink:0;}
+.prog-fill{height:100%;background:#ff7043;border-radius:8px;transition:width 0.8s ease;}
+.prog-label{text-align:center;padding:10px;font-size:13px;color:#888;flex-shrink:0;}
+.style-card{margin:4px 12px 8px;background:white;border-radius:12px;padding:12px 14px;flex-shrink:0;}
+.style-chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;}
+.style-chip{padding:7px 16px;border-radius:20px;border:1.5px solid #e0d8cc;font-size:13px;cursor:pointer;color:#666;transition:all 0.15s;}
+.style-chip.sel{border-color:#ff7043;background:#fff3e0;color:#e65100;}
+
+/* 结果 */
+.video-thumb{margin:12px;border-radius:16px;height:196px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;flex-shrink:0;}
+.video-bg{position:absolute;inset:0;border-radius:16px;}
+.video-center{position:relative;z-index:2;text-align:center;}
+.play-btn{width:60px;height:60px;border-radius:50%;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:26px;color:white;margin:0 auto;}
+.tags-row{display:flex;gap:8px;padding:0 12px 4px;flex-wrap:wrap;flex-shrink:0;}
+.tag{background:#fff3e0;color:#e65100;border-radius:20px;padding:6px 14px;font-size:13px;}
+.caption-box{margin:6px 12px;background:white;border-radius:12px;padding:12px 14px;font-size:15px;color:#555;line-height:1.8;flex-shrink:0;}
+.share-label{font-size:13px;color:#888;padding:4px 12px;flex-shrink:0;}
+.share-row{display:flex;gap:8px;padding:0 12px 8px;flex-shrink:0;}
+.share-btn{flex:1;padding:13px 4px;border-radius:12px;font-size:13px;font-weight:500;cursor:pointer;border:none;text-align:center;}
+
+/* 历史记录 */
+.vid-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;padding:12px;}
+.vid-item{background:white;border-radius:12px;overflow:hidden;cursor:pointer;}
+.vid-thumb{height:90px;display:flex;align-items:center;justify-content:center;font-size:34px;}
+.vid-info{padding:8px 10px 10px;}
+.vid-name{font-size:13px;font-weight:500;color:#333;}
+.vid-date{font-size:11px;color:#888;margin-top:3px;}
+
+/* 底部导航 */
+.bottom-nav{position:absolute;bottom:0;left:0;width:100%;background:white;border-top:0.5px solid #e0d8cc;display:flex;z-index:90;}
+.nav-item{flex:1;padding:9px 4px 7px;text-align:center;cursor:pointer;font-size:10px;color:#aaa;}
+.nav-item.active{color:#ff7043;}
+.nav-icon{font-size:22px;display:block;margin-bottom:2px;}
+.spacer{height:64px;flex-shrink:0;}
+
+/* 说明面板 */
+.info-panel{width:300px;background:white;border-radius:16px;padding:20px;box-shadow:0 4px 20px rgba(0,0,0,0.1);}
+.info-title{font-size:16px;font-weight:500;color:#333;margin-bottom:14px;padding-bottom:10px;border-bottom:0.5px solid #eee;}
+.info-section{margin-bottom:16px;}
+.info-sec-title{font-size:13px;font-weight:500;color:#ff7043;margin-bottom:8px;}
+.info-item{font-size:13px;color:#555;line-height:1.7;padding:3px 0;}
+.info-item:before{content:"· ";color:#bbb;}
+.flow-step{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+.flow-num{width:22px;height:22px;border-radius:50%;background:#ff7043;color:white;font-size:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.flow-text{font-size:13px;color:#444;}
+.feature-tag{display:inline-block;background:#f5f0e8;border-radius:8px;padding:4px 10px;font-size:12px;color:#666;margin:3px 3px 3px 0;}
+</style>
+</head>
+<body>
+<h1 class="title">心情视频 · 老年人AI短视频APP 交互原型</h1>
+
+<div class="device-wrap">
+
+<!-- 手机原型 -->
+<div class="phone-frame">
+  <div class="notch"></div>
+  <div class="status-bar"><span>9:41</span><span>■■■ 99%</span></div>
+  <div class="screen">
+
+    <!-- 首页 -->
+    <div class="page active" id="pg-home">
+      <div class="header orange">
+        <div class="header-title">心情视频</div>
+        <div class="header-sub">一句话，留住今天的美好</div>
+      </div>
+      <div class="mood-strip">
+        <button class="mood-chip" style="background:#fff3e0;color:#e65100;" onclick="selectMood(this)">开心</button>
+        <button class="mood-chip" style="background:#e8f5e9;color:#2e7d32;" onclick="selectMood(this)">平静</button>
+        <button class="mood-chip" style="background:#e3f2fd;color:#1565c0;" onclick="selectMood(this)">思念</button>
+        <button class="mood-chip" style="background:#fce4ec;color:#880e4f;" onclick="selectMood(this)">感恩</button>
+        <button class="mood-chip" style="background:#f3e5f5;color:#6a1b9a;" onclick="selectMood(this)">期待</button>
+        <button class="mood-chip" style="background:#e0f7fa;color:#006064;" onclick="selectMood(this)">自豪</button>
+      </div>
+      <div class="card">
+        <div class="card-title">说说今天的心情（可以很简短）</div>
+        <textarea class="big-input" id="mood-input" rows="3" placeholder="今天孙子来看我了，真高兴！"></textarea>
+        <div class="input-row">
+          <button class="icon-btn" onclick="showPage('pg-photo')"><span class="ico">📷</span>上传照片</button>
+          <button class="icon-btn" onclick="showPage('pg-video-in')"><span class="ico">🎬</span>上传视频</button>
+          <button class="icon-btn" onclick="showPage('pg-voice')"><span class="ico">🎙</span>语音输入</button>
+        </div>
+      </div>
+      <button class="big-btn" onclick="showPage('pg-gen')">AI 帮我生成视频 ▶</button>
+      <div class="sec-label">最近的心情视频</div>
+      <div class="recent-item" onclick="showPage('pg-result')">
+        <div class="ri-thumb" style="background:#ffe0b2;">🌸</div>
+        <div><div class="ri-title">春天来了，花开了</div><div class="ri-sub">2天前 · 已分享家人群</div></div>
+      </div>
+      <div class="recent-item" onclick="showPage('pg-result')">
+        <div class="ri-thumb" style="background:#c8e6c9;">☕</div>
+        <div><div class="ri-title">早晨喝茶，心情舒畅</div><div class="ri-sub">5天前 · 已分享朋友圈</div></div>
+      </div>
+      <div class="spacer"></div>
+      <div class="bottom-nav">
+        <div class="nav-item active"><span class="nav-icon">🏠</span>首页</div>
+        <div class="nav-item" onclick="showPage('pg-history')"><span class="nav-icon">📽</span>我的视频</div>
+        <div class="nav-item"><span class="nav-icon">👨‍👩‍👧</span>家人圈</div>
+        <div class="nav-item"><span class="nav-icon">⚙</span>设置</div>
+      </div>
+    </div>
+
+    <!-- 照片输入页 -->
+    <div class="page" id="pg-photo">
+      <div class="header orange-sm">
+        <button class="back-btn" onclick="showPage('pg-home')">← 返回</button>
+        <span class="header-title" style="font-size:17px;">选一张照片</span>
+      </div>
+      <div class="upload-zone" onclick="showPage('pg-gen')">
+        <div class="upload-icon">📷</div>
+        <div class="upload-title">点这里从相册选照片</div>
+        <div class="upload-sub">挑一张今天最喜欢的照片</div>
+      </div>
+      <div style="text-align:center;color:#c0b8ac;font-size:13px;padding:4px 0;">— 或者从最近照片中选 —</div>
+      <div class="photo-grid">
+        <div class="photo-cell" style="background:#ffe0b2;" onclick="showPage('pg-gen')">🌻</div>
+        <div class="photo-cell" style="background:#b2dfdb;" onclick="showPage('pg-gen')">🏞</div>
+        <div class="photo-cell" style="background:#f8bbd0;" onclick="showPage('pg-gen')">👨‍👩‍👧</div>
+        <div class="photo-cell" style="background:#dcedc8;" onclick="showPage('pg-gen')">🍃</div>
+        <div class="photo-cell" style="background:#ede7f6;" onclick="showPage('pg-gen')">☕</div>
+        <div class="photo-cell" style="background:#fff9c4;" onclick="showPage('pg-gen')">🌅</div>
+      </div>
+      <button class="big-btn" onclick="showPage('pg-gen')">用这张照片生成视频</button>
+      <div style="height:20px;"></div>
+    </div>
+
+    <!-- 视频输入页 -->
+    <div class="page" id="pg-video-in">
+      <div class="header orange-sm">
+        <button class="back-btn" onclick="showPage('pg-home')">← 返回</button>
+        <span class="header-title" style="font-size:17px;">上传一段视频</span>
+      </div>
+      <div style="padding:16px 16px 0;">
+        <div class="upload-zone" onclick="showPage('pg-gen')">
+          <div class="upload-icon">🎬</div>
+          <div class="upload-title">点这里选一段视频</div>
+          <div class="upload-sub">从手机相册里选，3分钟以内最好</div>
+        </div>
+        <div class="tip-box" style="margin-top:12px;">
+          <div class="tip-title">AI能帮您做什么</div>
+          <div class="tip-body">
+            自动识别视频里的精彩时刻 → 提取最美画面 → 配上符合心情的音乐 → 加上温暖的文字字幕，生成一个30秒精彩短视频。
+          </div>
+        </div>
+      </div>
+      <button class="big-btn" style="margin-top:14px;" onclick="showPage('pg-gen')">开始AI处理</button>
+    </div>
+
+    <!-- 语音输入页 -->
+    <div class="page" id="pg-voice">
+      <div class="header orange-sm">
+        <button class="back-btn" onclick="showPage('pg-home')">← 返回</button>
+        <span class="header-title" style="font-size:17px;">说出您的心情</span>
+      </div>
+      <div style="padding:20px 16px;flex:1;display:flex;flex-direction:column;align-items:stretch;">
+        <div style="background:white;border-radius:16px;padding:24px 16px;margin-bottom:16px;display:flex;flex-direction:column;align-items:center;">
+          <button class="rec-btn" id="rec-btn" onclick="toggleRec()">🎙</button>
+          <div class="rec-status" id="rec-status">点麦克风开始说话</div>
+          <div class="rec-hint">可以慢慢说，不着急，讲完按停止</div>
+          <div class="rec-text-box" id="rec-text"></div>
+        </div>
+        <div class="tip-box">
+          <div class="tip-title">您可以这样说</div>
+          <div class="tip-body">
+            "今天天气很好，出去走了走..."<br>
+            "孩子们来看我了，一起吃了饭..."<br>
+            "想起以前在老家的日子..."
+          </div>
+        </div>
+      </div>
+      <button class="big-btn" style="margin-bottom:16px;" onclick="showPage('pg-gen')">用录音生成视频</button>
+    </div>
+
+    <!-- 生成中 -->
+    <div class="page" id="pg-gen">
+      <div class="header orange" style="text-align:center;padding:18px 16px 14px;">
+        <div class="header-title">AI正在为您创作</div>
+        <div class="header-sub">请稍等约30秒，可以先选风格</div>
+      </div>
+      <div class="gen-steps">
+        <div class="gen-step">
+          <div class="step-dot done" id="s1">✓</div>
+          <div><div class="step-label">理解您的心情</div><div class="step-sub">分析内容，识别情绪标签</div></div>
+        </div>
+        <div class="gen-step">
+          <div class="step-dot running" id="s2">2</div>
+          <div><div class="step-label">生成视频画面</div><div class="step-sub">AI创作符合心情的视觉内容</div></div>
+        </div>
+        <div class="gen-step">
+          <div class="step-dot wait" id="s3">3</div>
+          <div><div class="step-label">匹配背景音乐</div><div class="step-sub">智能推荐情感音乐</div></div>
+        </div>
+        <div class="gen-step">
+          <div class="step-dot wait" id="s4">4</div>
+          <div><div class="step-label">生成字幕文案</div><div class="step-sub">自动写出温暖的话语</div></div>
+        </div>
+      </div>
+      <div class="prog-wrap"><div class="prog-fill" id="prog" style="width:35%"></div></div>
+      <div class="prog-label" id="prog-txt">AI正在生成画面，请稍候...</div>
+      <div class="style-card">
+        <div style="font-size:13px;font-weight:500;color:#333;">选个您喜欢的风格（可选）</div>
+        <div class="style-chips">
+          <div class="style-chip sel" onclick="selStyle(this)">温馨家庭</div>
+          <div class="style-chip" onclick="selStyle(this)">自然风光</div>
+          <div class="style-chip" onclick="selStyle(this)">怀旧复古</div>
+          <div class="style-chip" onclick="selStyle(this)">现代简约</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 结果页 -->
+    <div class="page" id="pg-result">
+      <div class="header orange" style="text-align:center;padding:14px 16px;">
+        <div class="header-title">您的心情视频好了！</div>
+        <div class="header-sub">点击播放键预览效果</div>
+      </div>
+      <div class="video-thumb">
+        <div class="video-bg" style="background:linear-gradient(135deg,#1a1a3e,#4a2060);"></div>
+        <div class="video-center">
+          <div style="font-size:52px;margin-bottom:8px;">🌻</div>
+          <div style="color:rgba(255,255,255,0.9);font-size:15px;font-weight:500;margin-bottom:6px;">今天孙子来看我了</div>
+          <div style="color:rgba(255,255,255,0.6);font-size:12px;">— 真高兴！—</div>
+          <div class="play-btn" style="margin-top:10px;">▶</div>
+        </div>
+      </div>
+      <div class="tags-row">
+        <span class="tag">开心</span><span class="tag">家人</span><span class="tag">温馨</span>
+      </div>
+      <div class="caption-box">
+        "今天孙子来看我了，一家人坐在一起，说说笑笑，心里满满的幸福感。这样的时光，值得永远珍藏。"
+      </div>
+      <div class="share-label">分享到：</div>
+      <div class="share-row">
+        <button class="share-btn" style="background:#07c160;color:white;">微信家人群</button>
+        <button class="share-btn" style="background:#1878f3;color:white;">朋友圈</button>
+        <button class="share-btn" style="background:#f5f0e8;color:#555;border:1px solid #ddd;">保存相册</button>
+      </div>
+      <button class="big-btn" onclick="showPage('pg-home')">再做一个心情视频</button>
+      <div style="height:20px;"></div>
+    </div>
+
+    <!-- 历史记录页 -->
+    <div class="page" id="pg-history">
+      <div class="header orange-sm">
+        <button class="back-btn" onclick="showPage('pg-home')">← 返回</button>
+        <span class="header-title" style="font-size:17px;">我的心情视频</span>
+      </div>
+      <div class="vid-grid">
+        <div class="vid-item" onclick="showPage('pg-result')">
+          <div class="vid-thumb" style="background:#ffe0b2;">🌻</div>
+          <div class="vid-info"><div class="vid-name">孙子来看我</div><div class="vid-date">2天前</div></div>
+        </div>
+        <div class="vid-item" onclick="showPage('pg-result')">
+          <div class="vid-thumb" style="background:#b2dfdb;">☕</div>
+          <div class="vid-info"><div class="vid-name">早晨喝茶</div><div class="vid-date">5天前</div></div>
+        </div>
+        <div class="vid-item" onclick="showPage('pg-result')">
+          <div class="vid-thumb" style="background:#dcedc8;">🌸</div>
+          <div class="vid-info"><div class="vid-name">春天花开了</div><div class="vid-date">1周前</div></div>
+        </div>
+        <div class="vid-item" onclick="showPage('pg-result')">
+          <div class="vid-thumb" style="background:#ede7f6;">🌅</div>
+          <div class="vid-info"><div class="vid-name">看日出</div><div class="vid-date">2周前</div></div>
+        </div>
+        <div class="vid-item" onclick="showPage('pg-result')">
+          <div class="vid-thumb" style="background:#f8bbd0;">🎶</div>
+          <div class="vid-info"><div class="vid-name">老歌真好听</div><div class="vid-date">3周前</div></div>
+        </div>
+        <div class="vid-item" onclick="showPage('pg-result')">
+          <div class="vid-thumb" style="background:#fff9c4;">🍃</div>
+          <div class="vid-info"><div class="vid-name">公园散步</div><div class="vid-date">1月前</div></div>
+        </div>
+      </div>
+      <div class="spacer"></div>
+      <div class="bottom-nav">
+        <div class="nav-item" onclick="showPage('pg-home')"><span class="nav-icon">🏠</span>首页</div>
+        <div class="nav-item active"><span class="nav-icon">📽</span>我的视频</div>
+        <div class="nav-item"><span class="nav-icon">👨‍👩‍👧</span>家人圈</div>
+        <div class="nav-item"><span class="nav-icon">⚙</span>设置</div>
+      </div>
+    </div>
+
+  </div>
+</div><!-- end phone -->
+
+<!-- 说明面板 -->
+<div class="info-panel">
+  <div class="info-title">产品设计说明</div>
+
+  <div class="info-section">
+    <div class="info-sec-title">核心流程</div>
+    <div class="flow-step"><div class="flow-num">1</div><div class="flow-text">选择输入方式</div></div>
+    <div class="flow-step"><div class="flow-num">2</div><div class="flow-text">输入内容（文字/照片/视频/语音）</div></div>
+    <div class="flow-step"><div class="flow-num">3</div><div class="flow-text">AI自动生成短视频</div></div>
+    <div class="flow-step"><div class="flow-num">4</div><div class="flow-text">预览 & 一键分享</div></div>
+  </div>
+
+  <div class="info-section">
+    <div class="info-sec-title">适老化设计要点</div>
+    <div class="info-item">字体17-20px，行距1.8倍</div>
+    <div class="info-item">按钮最小高度48px，大拇指可操控</div>
+    <div class="info-item">主流程操作不超过3步</div>
+    <div class="info-item">语音录入优先，减少打字</div>
+    <div class="info-item">错误有明确提示，操作可撤销</div>
+    <div class="info-item">暖色系配色，护眼舒适</div>
+  </div>
+
+  <div class="info-section">
+    <div class="info-sec-title">AI能力栈</div>
+    <div class="info-item">情绪分析：通义千问/GPT-4o mini</div>
+    <div class="info-item">文生视频：即梦AI / 可灵API</div>
+    <div class="info-item">照片转视频：SD+视频插帧</div>
+    <div class="info-item">语音识别：讯飞开放平台</div>
+    <div class="info-item">文案生成：LLM个性化字幕</div>
+    <div class="info-item">音乐匹配：情绪分类+版权库</div>
+  </div>
+
+  <div class="info-section">
+    <div class="info-sec-title">可扩展功能标签</div>
+    <span class="feature-tag">年度记忆短片</span>
+    <span class="feature-tag">AI数字分身</span>
+    <span class="feature-tag">家人圈</span>
+    <span class="feature-tag">心情日历</span>
+    <span class="feature-tag">养老院B端</span>
+    <span class="feature-tag">兴趣社区</span>
+    <span class="feature-tag">健康提醒</span>
+    <span class="feature-tag">怀旧相册</span>
+  </div>
+
+  <div class="info-section">
+    <div class="info-sec-title">商业模式</div>
+    <div class="info-item">免费版：每日3次，有水印</div>
+    <div class="info-item">会员版：18元/月，无限生成</div>
+    <div class="info-item">家庭套餐：38元/月</div>
+    <div class="info-item">B端养老院：500-2000元/月</div>
+  </div>
+
+  <div style="background:#fff3e0;border-radius:8px;padding:10px 12px;font-size:12px;color:#e65100;line-height:1.7;">
+    点击手机界面里的各个按钮体验完整交互流程：首页 → 输入 → 生成 → 分享
+  </div>
+</div>
+
+</div><!-- end device-wrap -->
+
+<script>
+function showPage(id){
+  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
+  document.getElementById(id).classList.add('active');
+  if(id==='pg-gen') startGen();
+}
+
+function selectMood(el){
+  document.querySelectorAll('.mood-chip').forEach(function(c){
+    c.style.boxShadow='none';c.style.fontWeight='500';
+  });
+  el.style.boxShadow='0 0 0 2.5px #ff7043';
+}
+
+function selStyle(el){
+  document.querySelectorAll('.style-chip').forEach(function(c){c.classList.remove('sel');});
+  el.classList.add('sel');
+}
+
+var recActive=false, recTimer=null;
+function toggleRec(){
+  recActive=!recActive;
+  var btn=document.getElementById('rec-btn');
+  var status=document.getElementById('rec-status');
+  var txt=document.getElementById('rec-text');
+  if(recActive){
+    btn.classList.add('recording');
+    btn.innerHTML='⏹';
+    status.textContent='正在录音，说完按停止...';
+    txt.style.display='block';
+    txt.textContent='今天孙子来看我了...';
+    recTimer=setTimeout(function(){
+      txt.textContent='今天孙子来看我了，真高兴！一家人在一起吃了饭，说说笑笑，很热闹。';
+    },2200);
+  } else {
+    btn.classList.remove('recording');
+    btn.innerHTML='🎙';
+    status.textContent='录音完成！可以生成视频了';
+    clearTimeout(recTimer);
+  }
+}
+
+var genT=null;
+function startGen(){
+  var prog=document.getElementById('prog');
+  var txt=document.getElementById('prog-txt');
+  var steps=[
+    {w:'35%', t:'AI正在生成画面，请稍候...', s2:'running', s3:'wait', s4:'wait'},
+    {w:'60%', t:'画面已生成，正在匹配音乐...', s2:'done', s3:'running', s4:'wait'},
+    {w:'82%', t:'音乐已就绪，生成字幕中...', s2:'done', s3:'done', s4:'running'},
+    {w:'100%',t:'即将完成，合成最终视频...', s2:'done', s3:'done', s4:'done'}
+  ];
+  var i=0;
+  clearInterval(genT);
+  genT=setInterval(function(){
+    if(i<steps.length){
+      var s=steps[i];
+      prog.style.width=s.w;
+      txt.textContent=s.t;
+      ['s2','s3','s4'].forEach(function(k){
+        var el=document.getElementById(k);
+        var cls=s[k];
+        el.className='step-dot '+cls;
+        el.textContent=cls==='done'?'✓':(k==='s2'?'2':k==='s3'?'3':'4');
+      });
+      i++;
+    } else {
+      clearInterval(genT);
+      setTimeout(function(){showPage('pg-result');},700);
+    }
+  },1600);
+}
+</script>
+</body>
+</html>
