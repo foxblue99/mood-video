@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>心情视频 V4 · AI陪伴数字伴侣版</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#2C2418;font-family:"PingFang SC","Microsoft YaHei",sans-serif;display:flex;justify-content:center;align-items:center;min-height:100vh;padding:20px;gap:40px;flex-wrap:wrap}
+
+.phone-wrapper{display:flex;flex-direction:column;align-items:center;gap:8px}
+.phone-label{color:#C4A265;font-size:13px;font-weight:500}
+.phone{width:390px;height:844px;background:#FCF8F2;border-radius:40px;overflow:hidden;position:relative;box-shadow:0 20px 60px rgba(0,0,0,.4);display:flex;flex-direction:column}
+.phone.child{background:#FAF5EC}
+
+.status-bar{height:44px;background:transparent;display:flex;justify-content:space-between;align-items:center;padding:0 28px;font-size:12px;color:#8B7355}
+.status-bar .time{font-weight:600}
+
+.nav-header{height:52px;display:flex;align-items:center;padding:0 20px;gap:12px}
+.nav-header .back-btn{width:32px;height:32px;border-radius:50%;background:rgba(139,115,85,.1);display:flex;align-items:center;justify-content:center;color:#8B7355;font-size:18px;border:none;cursor:pointer}
+.nav-header .title{font-size:17px;font-weight:600;color:#5C4A32}
+
+.page{display:none;flex:1;overflow-y:auto;padding:0 20px 20px}
+.page.active{display:block}
+
+.bottom-nav{height:68px;background:#FCF8F2;border-top:1px solid rgba(139,115,85,.1);display:flex;align-items:center;justify-content:space-around;padding-bottom:8px;flex-shrink:0}
+.nav-item{display:flex;flex-direction:column;align-items:center;gap:3px;border:none;background:none;cursor:pointer;padding:6px 0;color:#B8A88A;font-size:10px;transition:color .2s;width:64px}
+.nav-item .nav-icon{font-size:22px;line-height:1}
+.nav-item.active{color:#E8A87C;font-weight:600}
+
+.companion-avatar{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#F5D5B8,#E8B88A);display:flex;align-items:center;justify-content:center;font-size:40px;box-shadow:0 4px 16px rgba(232,168,124,.25);flex-shrink:0}
+.companion-avatar.small{width:44px;height:44px;font-size:22px;box-shadow:0 2px 8px rgba(232,168,124,.2)}
+
+.greeting-card{background:linear-gradient(135deg,#FDF0E3,#FBE8D5);border-radius:20px;padding:20px;margin-bottom:16px;border:1px solid rgba(196,162,101,.15)}
+.greeting-card .greeting-text{font-size:15px;color:#5C4A32;line-height:1.6;margin-top:10px}
+.greeting-card .greeting-row{display:flex;align-items:center;gap:14px}
+
+.quick-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.quick-action{background:#FFF8F0;border:1px solid rgba(196,162,101,.1);border-radius:16px;padding:16px;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:12px}
+.quick-action:hover{background:#FDF0E3;border-color:rgba(232,168,124,.3)}
+.quick-action .action-icon{width:44px;height:44px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.quick-action .action-info{text-align:left}
+.quick-action .action-title{font-size:15px;font-weight:600;color:#5C4A32}
+.quick-action .action-sub{font-size:11px;color:#B8A88A;margin-top:2px}
+
+.section-title{font-size:13px;color:#B8A88A;font-weight:600;margin:16px 0 10px;letter-spacing:.5px}
+
+.proactive-card{background:#FFF8F0;border-radius:16px;padding:16px;border:1px solid rgba(196,162,101,.1);margin-bottom:10px;display:flex;gap:12px;align-items:flex-start;cursor:pointer}
+.proactive-card .card-content{flex:1}
+.proactive-card .card-title{font-size:14px;font-weight:600;color:#5C4A32;margin-bottom:4px}
+.proactive-card .card-body{font-size:13px;color:#8B7355;line-height:1.5}
+.proactive-card .card-time{font-size:11px;color:#B8A88A;margin-top:6px}
+.proactive-card .card-badge{font-size:10px;padding:2px 8px;border-radius:10px;font-weight:600;white-space:nowrap}
+.badge-care{background:#FDF0E3;color:#E8A87C}
+.badge-remind{background:#E8F5E9;color:#66BB6A}
+.badge-alert{background:#FFEBEE;color:#EF5350}
+
+.chat-container{flex:1;overflow-y:auto;padding:12px 0;display:flex;flex-direction:column;gap:12px}
+.chat-input-bar{display:flex;align-items:center;gap:10px;padding:12px 16px;background:#FCF8F2;border-top:1px solid rgba(139,115,85,.08)}
+.chat-input{flex:1;height:44px;border-radius:22px;border:1px solid rgba(196,162,101,.2);background:#FFF8F0;padding:0 18px;font-size:15px;color:#5C4A32;outline:none}
+.chat-input::placeholder{color:#C4A265}
+.voice-btn{width:44px;height:44px;border-radius:50%;background:#E8A87C;border:none;color:#fff;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .15s}
+.voice-btn:active{transform:scale(.92);background:#D4956A}
+.send-btn{width:44px;height:44px;border-radius:50%;background:#E8A87C;border:none;color:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+
+.msg-bubble{max-width:80%;padding:12px 16px;border-radius:18px;font-size:14px;line-height:1.6;animation:msgIn .3s ease-out}
+@keyframes msgIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.msg-bot{background:#FFF8F0;color:#5C4A32;align-self:flex-start;border-bottom-left-radius:6px}
+.msg-user{background:#E8A87C;color:#fff;align-self:flex-end;border-bottom-right-radius:6px}
+.msg-wrapper{display:flex;align-items:flex-end;gap:8px}
+.msg-wrapper.bot{align-self:flex-start}
+.msg-wrapper.user{flex-direction:row-reverse;align-self:flex-end}
+
+.report-card{background:#FFF8F0;border-radius:20px;padding:20px;border:1px solid rgba(196,162,101,.1);margin-bottom:14px}
+.report-card .report-date{font-size:13px;color:#B8A88A;margin-bottom:12px}
+.report-mood{display:flex;align-items:center;gap:14px;margin-bottom:16px}
+.mood-circle{width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:32px}
+.mood-happy{background:#FDF0E3}
+.mood-ok{background:#FFF8F0}
+.mood-sad{background:#F5F0EB}
+
+.report-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.stat-item{background:#FCF8F2;border-radius:12px;padding:12px;text-align:center}
+.stat-value{font-size:18px;font-weight:700;color:#5C4A32}
+.stat-label{font-size:11px;color:#B8A88A;margin-top:2px}
+
+.report-summary{background:linear-gradient(135deg,#FDF0E3,#FBE8D5);border-radius:14px;padding:14px;margin-top:12px;font-size:13px;color:#5C4A32;line-height:1.7}
+.report-summary .summary-label{font-size:11px;color:#C4A265;margin-bottom:4px;font-weight:600}
+
+/* Child side styles */
+.child .report-card{background:#FAF5EC}
+.child .stat-item{background:#F5F0E8}
+.child .mood-happy{background:#E8F0E8}
+.child .bottom-nav{background:#FAF5EC}
+
+.mood-tag{padding:8px 18px;border-radius:20px;border:1px solid rgba(196,162,101,.2);background:#FFF8F0;color:#8B7355;font-size:14px;cursor:pointer;transition:all .2s;font-family:inherit}
+.mood-tag.active{background:#FDF0E3;border-color:#E8A87C;color:#E8A87C;font-weight:600}
+
+.media-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px;border-radius:14px;border:1px solid rgba(196,162,101,.12);background:#FFF8F0;color:#5C4A32;font-size:13px;cursor:pointer;font-family:inherit;transition:all .2s}
+.media-btn:hover{background:#FDF0E3;border-color:rgba(232,168,124,.3)}
+.media-btn span:last-child{font-size:12px;color:#8B7355}
+
+.action-btn-main{height:48px;border-radius:12px;border:none;background:#E8A87C;color:#fff;font-size:16px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s}
+.action-btn-main:hover{background:#D4956A}
+.action-btn-sub{height:48px;border-radius:12px;border:1px solid rgba(196,162,101,.2);background:#FFF8F0;color:#5C4A32;font-size:16px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s}
+.action-btn-sub:hover{background:#FDF0E3}
+
+.family-link-bar{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-radius:14px;background:#FFF8F0;border:1px solid rgba(196,162,101,.1);cursor:pointer;transition:all .2s}
+.family-link-bar:hover{background:#FDF0E3}
+
+.recent-card{display:flex;align-items:center;gap:12px;padding:12px;border-radius:14px;background:#FFF8F0;border:1px solid rgba(196,162,101,.08);cursor:pointer;transition:all .2s}
+.recent-card:hover{background:#FDF0E3}
+
+
+.tag{display:inline-block;padding:4px 12px;border-radius:12px;font-size:11px;font-weight:600;margin-right:6px;margin-bottom:6px}
+.tag-warm{background:#FDF0E3;color:#E8A87C}
+.tag-info{background:#E3F0FD;color:#5B9BD5}
+.tag-success{background:#E8F5E9;color:#66BB6A}
+
+.btn-primary{background:#E8A87C;color:#fff;border:none;border-radius:14px;padding:12px 24px;font-size:15px;font-weight:600;cursor:pointer;transition:background .2s}
+.btn-primary:hover{background:#D4956A}
+.btn-secondary{background:#FFF8F0;color:#E8A87C;border:1.5px solid rgba(232,168,124,.3);border-radius:14px;padding:12px 24px;font-size:15px;font-weight:600;cursor:pointer}
+
+.typing-dots{display:flex;gap:4px;padding:4px 0}
+.typing-dots span{width:6px;height:6px;border-radius:50%;background:#C4A265;animation:dotBounce 1.4s infinite ease-in-out}
+.typing-dots span:nth-child(2){animation-delay:.2s}
+.typing-dots span:nth-child(3){animation-delay:.4s}
+@keyframes dotBounce{0%,80%,100%{transform:scale(.6);opacity:.4}40%{transform:scale(1);opacity:1}}
+
+.tab-bar{display:flex;gap:4px;margin-bottom:16px;background:rgba(196,162,101,.08);border-radius:12px;padding:4px}
+.tab-item{flex:1;text-align:center;padding:8px 0;border-radius:10px;font-size:13px;color:#B8A88A;cursor:pointer;border:none;background:none;font-weight:500;transition:all .2s}
+.tab-item.active{background:#E8A87C;color:#fff}
+
+@media(max-width:900px){.phone-wrapper{gap:20px}}
+</style>
+</head>
+<body>
+
+<div class="phone-wrapper">
+  <div class="phone-label">老人端 — 有小暖陪伴</div>
+  <div class="phone" id="elderPhone">
+
+    <div class="status-bar">
+      <span class="time">9:41</span>
+      <span style="display:flex;gap:6px">5G ▮▮▮▮ 🔋92%</span>
+    </div>
+
+    <!-- Page: Home -->
+    <div class="page active" id="elder-home">
+      <div class="greeting-card">
+        <div class="greeting-row">
+          <div class="companion-avatar">🧓</div>
+          <div style="flex:1">
+            <div style="font-size:18px;font-weight:700;color:#5C4A32">早上好，王阿姨</div>
+            <div style="font-size:12px;color:#B8A88A;margin-top:2px">7月2日 星期三 · 晴 26°C</div>
+          </div>
+        </div>
+        <div class="greeting-text">
+          我是<b>小暖</b>，您的数字老伴。今天记得吃降压药哦，下午我陪您聊聊天~
+        </div>
+      </div>
+
+      <div class="quick-actions">
+        <div class="quick-action" onclick="switchElderPage('elder-chat')">
+          <div class="action-icon" style="background:#FDF0E3">💬</div>
+          <div class="action-info">
+            <div class="action-title">找小暖聊天</div>
+            <div class="action-sub">说话或打字都行</div>
+          </div>
+        </div>
+        <div class="quick-action" onclick="switchElderPage('elder-chat');setTimeout(()=>sendProactive('remind'),300)">
+          <div class="action-icon" style="background:#E8F5E9">💊</div>
+          <div class="action-info">
+            <div class="action-title">问问今天该做什么</div>
+            <div class="action-sub">用药·活动·提醒</div>
+          </div>
+        </div>
+        <div class="quick-action" onclick="switchElderPage('elder-video-create')">
+          <div class="action-icon" style="background:#FDF0E3">🎬</div>
+          <div class="action-info">
+            <div class="action-title">生成心情视频</div>
+            <div class="action-sub">一句话变短视频</div>
+          </div>
+        </div>
+        <div class="quick-action" onclick="switchElderPage('elder-chat');setTimeout(()=>sendProactive('story'),300)">
+          <div class="action-icon" style="background:#FFF0E8">📖</div>
+          <div class="action-info">
+            <div class="action-title">让小暖讲个故事</div>
+            <div class="action-sub">怀旧·新闻·笑话</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-title">小暖的主动关怀</div>
+
+      <div class="proactive-card" onclick="switchElderPage('elder-chat');setTimeout(()=>sendProactive('remind'),300)">
+        <div class="companion-avatar small">🧓</div>
+        <div class="card-content">
+          <div class="card-title"><span class="card-badge badge-remind">用药提醒</span> 该吃药了</div>
+          <div class="card-body">王阿姨，上午9点的降压药该吃了，记得用温水送服哦</div>
+          <div class="card-time">今天 08:55 · 小暖提醒</div>
+        </div>
+      </div>
+
+      <div class="proactive-card" onclick="switchElderPage('elder-chat');setTimeout(()=>sendProactive('weather'),300)">
+        <div class="companion-avatar small">🧓</div>
+        <div class="card-content">
+          <div class="card-title"><span class="card-badge badge-care">天气提醒</span> 下午有雨</div>
+          <div class="card-body">下午3点开始下小雨，如果要出门散步记得带伞，别走太远哦</div>
+          <div class="card-time">今天 07:30 · 小暖提醒</div>
+        </div>
+      </div>
+
+      <div class="proactive-card" onclick="switchElderPage('elder-chat');setTimeout(()=>sendProactive('chat'),300)">
+        <div class="companion-avatar small">🧓</div>
+        <div class="card-content">
+          <div class="card-title"><span class="card-badge badge-care">日常问候</span> 昨晚睡得好吗？</div>
+          <div class="card-body">王阿姨，今天看起来精神不错！想跟小暖说说话吗？</div>
+          <div class="card-time">今天 06:30 · 小暖问候</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Page: Video Create -->
+    <div class="page" id="elder-video-create">
+      <div class="nav-header">
+        <button class="back-btn" onclick="switchElderPage('elder-home')">←</button>
+        <div class="title">心情视频</div>
+      </div>
+      <div style="text-align:center;margin-bottom:16px">
+        <div style="font-size:22px;font-weight:600;color:#5C4A32">心情视频</div>
+        <div style="font-size:13px;color:#B8A88A;margin-top:4px">记录今天的小美好</div>
+      </div>
+
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;justify-content:center">
+        <button class="mood-tag active" onclick="toggleMood(this)">开心</button>
+        <button class="mood-tag" onclick="toggleMood(this)">感恩</button>
+        <button class="mood-tag" onclick="toggleMood(this)">充实</button>
+        <button class="mood-tag" onclick="toggleMood(this)">思念</button>
+        <button class="mood-tag" onclick="toggleMood(this)">悠闲</button>
+      </div>
+
+      <div style="margin-bottom:12px">
+        <div style="font-size:13px;color:#B8A88A;margin-bottom:6px">说说今天的心情</div>
+        <textarea id="moodText" placeholder="今天晒太阳散步，很舒服" style="width:100%;height:80px;border-radius:14px;border:1px solid rgba(196,162,101,.2);background:#FFF8F0;padding:12px 16px;font-size:15px;color:#5C4A32;resize:none;outline:none;font-family:inherit;line-height:1.6"></textarea>
+      </div>
+
+      <div style="display:flex;gap:10px;margin-bottom:16px">
+        <button class="media-btn" onclick="alert('模拟拍照：打开相机')">
+          <span style="font-size:20px">📷</span>
+          <span>拍照片</span>
+        </button>
+        <button class="media-btn" onclick="alert('模拟录像：打开摄像机')">
+          <span style="font-size:20px">🎥</span>
+          <span>录视频</span>
+        </button>
+        <button class="media-btn" onclick="alert('模拟录音：打开麦克风')">
+          <span style="font-size:20px">🎙️</span>
+          <span>说说话</span>
+        </button>
+      </div>
+
+      <div style="display:flex;gap:10px;margin-bottom:16px">
+        <button class="action-btn-main" onclick="alert('开始AI生成：请稍等30秒...')" style="flex:1">
+          AI帮我生成
+        </button>
+        <button class="action-btn-sub" onclick="switchElderPage('elder-health')" style="flex:1">
+          今日健康打卡
+        </button>
+      </div>
+
+      <div class="family-link-bar" onclick="switchElderPage('elder-family')">
+        <div style="display:flex;align-items:center;gap:10px">
+          <div style="width:36px;height:36px;border-radius:50%;background:#E8F5E9;display:flex;align-items:center;justify-content:center;font-size:18px">👧</div>
+          <div>
+            <div style="font-size:14px;font-weight:600;color:#5C4A32">已连接女儿 小芳</div>
+            <div style="font-size:12px;color:#66BB6A">健康数据实时同步中</div>
+          </div>
+        </div>
+        <div style="font-size:13px;color:#E8A87C;font-weight:600">查看 ></div>
+      </div>
+
+      <div class="section-title" style="margin-top:20px">最近创作</div>
+      <div class="recent-card" onclick="alert('播放视频：春天来了，公园的花开了')">
+        <div style="width:60px;height:60px;border-radius:12px;background:#E8F5E9;display:flex;align-items:center;justify-content:center;font-size:28px">🌸</div>
+        <div style="flex:1">
+          <div style="font-size:15px;font-weight:600;color:#5C4A32">春天来了，公园的花开了</div>
+          <div style="font-size:12px;color:#B8A88A;margin-top:4px">昨天 · 已同步给女儿 · 6位点赞</div>
+        </div>
+        <div style="font-size:20px">▶️</div>
+      </div>
+    </div>
+
+    <!-- Page: Chat -->
+    <div class="page" id="elder-chat">
+      <div class="nav-header">
+        <button class="back-btn" onclick="switchElderPage('elder-home')">←</button>
+        <div class="companion-avatar small">🧓</div>
+        <div>
+          <div style="font-size:15px;font-weight:600;color:#5C4A32">小暖</div>
+          <div style="font-size:11px;color:#66BB6A">在线 · AI老伴</div>
+        </div>
+      </div>
+      <div class="chat-container" id="elderChatContainer">
+        <div style="text-align:center;font-size:11px;color:#C4A265;margin:8px 0">今天 09:41</div>
+      </div>
+      <div class="chat-input-bar">
+        <input class="chat-input" id="elderChatInput" placeholder="跟小暖说句话..." onkeydown="if(event.key==='Enter')sendElderMsg()">
+        <button class="voice-btn" onclick="sendVoiceMsg()">🎤</button>
+        <button class="send-btn" onclick="sendElderMsg()">↑</button>
+      </div>
+    </div>
+
+    <!-- Page: Health -->
+    <div class="page" id="elder-health">
+      <div style="font-size:18px;font-weight:700;color:#5C4A32;margin:8px 0 12px">今日健康打卡</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div style="background:#FDF0E3;border-radius:16px;padding:16px;text-align:center;cursor:pointer" onclick="alert('已打卡：心情不错')">
+          <div style="font-size:32px;margin-bottom:6px">😊</div>
+          <div style="font-size:14px;font-weight:600;color:#5C4A32">心情</div>
+          <div style="font-size:11px;color:#C4A265;margin-top:2px">还不错</div>
+        </div>
+        <div style="background:#FFEBEE;border-radius:16px;padding:16px;text-align:center;cursor:pointer" onclick="alert('已打卡：血压 138/85')">
+          <div style="font-size:32px;margin-bottom:6px">💗</div>
+          <div style="font-size:14px;font-weight:600;color:#5C4A32">血压</div>
+          <div style="font-size:11px;color:#EF5350;margin-top:2px">138/85 偏高</div>
+        </div>
+        <div style="background:#E8F5E9;border-radius:16px;padding:16px;text-align:center;cursor:pointer" onclick="alert('已打卡：已服药')">
+          <div style="font-size:32px;margin-bottom:6px">💊</div>
+          <div style="font-size:14px;font-weight:600;color:#5C4A32">用药</div>
+          <div style="font-size:11px;color:#66BB6A;margin-top:2px">已服用</div>
+        </div>
+        <div style="background:#E3F0FD;border-radius:16px;padding:16px;text-align:center;cursor:pointer" onclick="alert('已打卡：3280步')">
+          <div style="font-size:32px;margin-bottom:6px">🚶</div>
+          <div style="font-size:14px;font-weight:600;color:#5C4A32">步数</div>
+          <div style="font-size:11px;color:#5B9BD5;margin-top:2px">3,280 步</div>
+        </div>
+        <div style="background:#F5F0EB;border-radius:16px;padding:16px;text-align:center;cursor:pointer" onclick="alert('已打卡：睡眠6.5小时')">
+          <div style="font-size:32px;margin-bottom:6px">🌙</div>
+          <div style="font-size:14px;font-weight:600;color:#5C4A32">睡眠</div>
+          <div style="font-size:11px;color:#B8A88A;margin-top:2px">6.5 小时</div>
+        </div>
+        <div style="background:#FFF0E8;border-radius:16px;padding:16px;text-align:center;cursor:pointer" onclick="alert('已打卡：血糖 6.2')">
+          <div style="font-size:32px;margin-bottom:6px">🩸</div>
+          <div style="font-size:14px;font-weight:600;color:#5C4A32">血糖</div>
+          <div style="font-size:11px;color:#C4A265;margin-top:2px">6.2 mmol/L</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Page: Location -->
+    <div class="page" id="elder-location" style="text-align:center;padding-top:40px">
+      <div style="font-size:40px;margin-bottom:8px">🗺️</div>
+      <div style="font-size:16px;font-weight:600;color:#5C4A32">位置安全</div>
+      <div style="font-size:13px;color:#B8A88A;margin:6px 0 20px">小暖在看着您，放心出门</div>
+      <div style="background:#FDF0E3;border-radius:16px;padding:16px;margin-bottom:12px;text-align:left">
+        <div style="font-size:13px;font-weight:600;color:#5C4A32;margin-bottom:4px">当前位置</div>
+        <div style="font-size:12px;color:#8B7355">朝阳区·团结湖公园附近</div>
+        <div style="font-size:11px;color:#B8A88A;margin-top:2px">更新于 3 分钟前</div>
+      </div>
+      <button class="btn-primary" style="width:100%;margin-bottom:8px" onclick="alert('SOS已触发！位置已发送给子女')">SOS 紧急求助（长按3秒）</button>
+      <button class="btn-secondary" style="width:100%" onclick="alert('围栏管理')">管理安全围栏</button>
+    </div>
+
+    <!-- Page: Social -->
+    <div class="page" id="elder-social">
+      <div style="font-size:18px;font-weight:700;color:#5C4A32;margin:8px 0 12px">老友圈</div>
+      <div style="background:#FFF8F0;border-radius:16px;padding:16px;margin-bottom:12px">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+          <div style="width:40px;height:40px;border-radius:50%;background:#F5D5B8;display:flex;align-items:center;justify-content:center;font-size:20px">👴</div>
+          <div>
+            <div style="font-size:14px;font-weight:600;color:#5C4A32">老张</div>
+            <div style="font-size:11px;color:#B8A88A">10分钟前</div>
+          </div>
+        </div>
+        <div style="font-size:14px;color:#5C4A32;line-height:1.6">今天天气好，在公园打了一上午太极，舒坦！</div>
+        <div style="display:flex;gap:16px;margin-top:10px;font-size:12px;color:#B8A88A">
+          <span>❤️ 12</span><span>💬 5条回复</span>
+        </div>
+      </div>
+      <div style="background:#FFF8F0;border-radius:16px;padding:16px">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+          <div style="width:40px;height:40px;border-radius:50%;background:#E8D5C0;display:flex;align-items:center;justify-content:center;font-size:20px">👵</div>
+          <div>
+            <div style="font-size:14px;font-weight:600;color:#5C4A32">李阿姨</div>
+            <div style="font-size:11px;color:#B8A88A">1小时前</div>
+          </div>
+        </div>
+        <div style="font-size:14px;color:#5C4A32;line-height:1.6">小暖今天又提醒我吃药了，这个APP真贴心！</div>
+        <div style="display:flex;gap:16px;margin-top:10px;font-size:12px;color:#B8A88A">
+          <span>❤️ 28</span><span>💬 8条回复</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="bottom-nav">
+      <button class="nav-item active" id="nav-elder-0" onclick="switchElderTab(0)"><span class="nav-icon">🏠</span>首页</button>
+      <button class="nav-item" id="nav-elder-1" onclick="switchElderTab(1)"><span class="nav-icon">💬</span>小暖</button>
+      <button class="nav-item" id="nav-elder-2" onclick="switchElderTab(2)"><span class="nav-icon">❤️</span>健康</button>
+      <button class="nav-item" id="nav-elder-3" onclick="switchElderTab(3)"><span class="nav-icon">📍</span>位置</button>
+      <button class="nav-item" id="nav-elder-4" onclick="switchElderTab(4)"><span class="nav-icon">👥</span>老友</button>
+    </div>
+  </div>
+</div>
+
+<div class="phone-wrapper">
+  <div class="phone-label">子女端 — 每日报告</div>
+  <div class="phone child" id="childPhone">
+
+    <div class="status-bar">
+      <span class="time">9:41</span>
+      <span style="display:flex;gap:6px">5G ▮▮▮▮ 🔋78%</span>
+    </div>
+
+    <!-- Page: Daily Report -->
+    <div class="page active" id="child-report">
+      <div style="font-size:18px;font-weight:700;color:#5C4A32;margin:8px 0 4px">妈妈的今日报告</div>
+      <div style="font-size:12px;color:#B8A88A;margin-bottom:16px">由小暖自动生成 · 7月2日</div>
+
+      <div class="report-card">
+        <div class="report-date">心情总结</div>
+        <div class="report-mood">
+          <div class="mood-circle mood-happy">😊</div>
+          <div>
+            <div style="font-size:16px;font-weight:600;color:#5C4A32">整体不错</div>
+            <div style="font-size:12px;color:#B8A88A;margin-top:2px">今天心情比较愉快</div>
+          </div>
+        </div>
+        <div class="report-stats">
+          <div class="stat-item"><div class="stat-value">3次</div><div class="stat-label">与小暖聊天</div></div>
+          <div class="stat-item"><div class="stat-value">1次</div><div class="stat-label">生成视频</div></div>
+          <div class="stat-item"><div class="stat-value">3280</div><div class="stat-label">步数</div></div>
+        </div>
+      </div>
+
+      <div class="report-card">
+        <div class="report-date">健康概览</div>
+        <div class="report-stats">
+          <div class="stat-item"><div class="stat-value" style="color:#EF5350">138/85</div><div class="stat-label">血压 ⚠️</div></div>
+          <div class="stat-item"><div class="stat-value" style="color:#66BB6A">✅</div><div class="stat-label">已服药</div></div>
+          <div class="stat-item"><div class="stat-value">6.5h</div><div class="stat-label">睡眠</div></div>
+        </div>
+      </div>
+
+      <div class="report-card">
+        <div class="report-date">小暖的观察摘要</div>
+        <div class="report-summary">
+          <div class="summary-label">小暖说：</div>
+          王阿姨今天心情不错，早上6:30就起来了，主动跟我聊了会儿天。上午跟她聊了年轻时候在工厂的事，她讲得很开心。血压有点偏高，不过已经按时吃了降压药。中午饭吃得不多，说天热没胃口，我建议她下午喝点绿豆汤。下午3点提醒她下雨别出门，她说就在家看会儿电视。下午主动让我讲了个故事，听完说"这个小暖还挺会哄人"。总的来说今天是平稳愉快的一天，您可以放心。建议周末回来看看，阿姨念叨了好几次。
+        </div>
+      </div>
+
+      <div class="report-card">
+        <div class="report-date">位置安全</div>
+        <div style="background:#F5F0E8;border-radius:12px;padding:12px;font-size:13px;color:#5C4A32;line-height:1.6">
+          📍 上午9:00-10:30 团结湖公园散步<br>
+          📍 10:30-现在 在家中<br>
+          🟢 未离开安全围栏范围
+        </div>
+      </div>
+
+      <div style="display:flex;gap:8px">
+        <button class="btn-primary" style="flex:1" onclick="alert('已拨通妈妈电话')">📞 给妈妈打电话</button>
+        <button class="btn-secondary" style="flex:1" onclick="alert('已发送消息给妈妈')">💬 发消息</button>
+      </div>
+    </div>
+
+    <!-- Page: Health Dashboard -->
+    <div class="page" id="child-health">
+      <div style="font-size:18px;font-weight:700;color:#5C4A32;margin:8px 0 12px">健康数据看板</div>
+      <div class="tab-bar">
+        <button class="tab-item active" onclick="switchChildTab(this,'week')">近7天</button>
+        <button class="tab-item" onclick="switchChildTab(this,'month')">近30天</button>
+      </div>
+
+      <div class="report-card">
+        <div class="report-date">血压趋势</div>
+        <div style="display:flex;align-items:flex-end;gap:8px;height:80px;padding:8px 0">
+          <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
+            <div style="width:24px;height:40px;background:#66BB6A;border-radius:6px"></div><span style="font-size:9px;color:#B8A88A">周一</span>
+          </div>
+          <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
+            <div style="width:24px;height:48px;background:#FFA726;border-radius:6px"></div><span style="font-size:9px;color:#B8A88A">周二</span>
+          </div>
+          <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
+            <div style="width:24px;height:52px;background:#EF5350;border-radius:6px"></div><span style="font-size:9px;color:#B8A88A">今天</span>
+          </div>
+          <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
+            <div style="width:24px;height:36px;background:#66BB6A;border-radius:6px"></div><span style="font-size:9px;color:#B8A88A">周日</span>
+          </div>
+          <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
+            <div style="width:24px;height:42px;background:#FFA726;border-radius:6px"></div><span style="font-size:9px;color:#B8A88A">周六</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="report-card">
+        <div class="report-date">本周异常记录</div>
+        <div style="font-size:13px;color:#EF5350;line-height:2">
+          ⚠️ 7月2日 血压138/85 偏高<br>
+          ⚠️ 7月1日 漏服降压药（已补服）
+        </div>
+      </div>
+    </div>
+
+    <!-- Page: Location -->
+    <div class="page" id="child-location" style="text-align:center;padding-top:20px">
+      <div style="background:#E8F5E9;border-radius:16px;padding:20px;margin-bottom:12px">
+        <div style="font-size:40px">🗺️</div>
+        <div style="font-size:15px;font-weight:600;color:#5C4A32;margin:8px 0">实时位置</div>
+        <div style="font-size:13px;color:#8B7355">朝阳区·团结湖公园附近</div>
+        <div style="font-size:11px;color:#B8A88A">更新于 3分钟前 · 🔋 92%</div>
+      </div>
+      <button class="btn-primary" style="width:100%;margin-bottom:8px">一键导航到妈妈位置</button>
+      <button class="btn-secondary" style="width:100%">查看今日轨迹</button>
+    </div>
+
+    <!-- Page: Alerts -->
+    <div class="page" id="child-alerts">
+      <div style="font-size:18px;font-weight:700;color:#5C4A32;margin:8px 0 12px">提醒中心</div>
+
+      <div class="proactive-card" style="border-left:3px solid #EF5350">
+        <div style="font-size:24px">🔴</div>
+        <div class="card-content">
+          <div class="card-title">血压偏高提醒</div>
+          <div class="card-body">妈妈今日血压138/85，略高于正常范围</div>
+          <div class="card-time">今天 09:30</div>
+        </div>
+      </div>
+
+      <div class="proactive-card" style="border-left:3px solid #FFA726">
+        <div style="font-size:24px">🟠</div>
+        <div class="card-content">
+          <div class="card-title">用药提醒</div>
+          <div class="card-body">降压药已按时服用，小暖已确认</div>
+          <div class="card-time">今天 09:00</div>
+        </div>
+      </div>
+
+      <div class="proactive-card" style="border-left:3px solid #66BB6A">
+        <div style="font-size:24px">🟢</div>
+        <div class="card-content">
+          <div class="card-title">妈妈发布了新视频</div>
+          <div class="card-body">妈妈刚用一句话生成了一个心情视频，去看看</div>
+          <div class="card-time">今天 08:20</div>
+        </div>
+      </div>
+
+      <div class="proactive-card" style="border-left:3px solid #5B9BD5">
+        <div style="font-size:24px">🔵</div>
+        <div class="card-content">
+          <div class="card-title">每日报告已生成</div>
+          <div class="card-body">小暖已生成妈妈今天的完整状态报告</div>
+          <div class="card-time">今天 06:30</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Page: Chat with parent -->
+    <div class="page" id="child-chat" style="display:flex;flex-direction:column">
+      <div class="nav-header">
+        <div style="width:36px;height:36px;border-radius:50%;background:#F5D5B8;display:flex;align-items:center;justify-content:center;font-size:18px">👵</div>
+        <div>
+          <div style="font-size:15px;font-weight:600;color:#5C4A32">妈妈</div>
+          <div style="font-size:11px;color:#66BB6A">在线</div>
+        </div>
+      </div>
+      <div style="flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:12px">
+        <div style="text-align:center;font-size:11px;color:#C4A265">今天 08:20</div>
+        <div class="msg-wrapper bot"><div class="companion-avatar small">👵</div><div class="msg-bubble msg-bot">闺女，今天小暖提醒我吃药了，这个APP真好用</div></div>
+        <div class="msg-wrapper user"><div class="msg-bubble msg-user">那就好！妈你今天血压怎么样？</div></div>
+        <div class="msg-wrapper bot"><div class="companion-avatar small">👵</div><div class="msg-bubble msg-bot">138/85，稍微有点高，不过药已经吃了</div></div>
+        <div class="msg-wrapper user"><div class="msg-bubble msg-user">那要注意休息，天热别出去太久。我周末回来看你</div></div>
+      </div>
+      <div class="chat-input-bar">
+        <input class="chat-input" placeholder="给妈妈发消息...">
+        <button class="send-btn">↑</button>
+      </div>
+    </div>
+
+    <div class="bottom-nav">
+      <button class="nav-item active" id="nav-child-0" onclick="switchChildTab_nav(0)"><span class="nav-icon">📋</span>今日</button>
+      <button class="nav-item" id="nav-child-1" onclick="switchChildTab_nav(1)"><span class="nav-icon">❤️</span>健康</button>
+      <button class="nav-item" id="nav-child-2" onclick="switchChildTab_nav(2)"><span class="nav-icon">📍</span>位置</button>
+      <button class="nav-item" id="nav-child-3" onclick="switchChildTab_nav(3)"><span class="nav-icon">🔔</span>提醒</button>
+      <button class="nav-item" id="nav-child-4" onclick="switchChildTab_nav(4)"><span class="nav-icon">💬</span>对话</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const elderPages = ['elder-home','elder-video-create','elder-chat','elder-health','elder-location','elder-social'];
+const childPages = ['child-report','child-health','child-location','child-alerts','child-chat'];
+
+function switchElderPage(id){
+  document.querySelectorAll('#elderPhone .page').forEach(p=>p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+function switchChildPage(id){
+  childPages.forEach(p=>document.getElementById(p).classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function switchElderTab(idx){
+  const navMap = ['elder-home','elder-chat','elder-health','elder-location','elder-social'];
+  document.querySelectorAll('#elderPhone .nav-item').forEach((el,i)=>el.classList.toggle('active',i===idx));
+  switchElderPage(navMap[idx]);
+}
+function switchChildTab_nav(idx){
+  document.querySelectorAll('#childPhone .nav-item').forEach((el,i)=>el.classList.toggle('active',i===idx));
+  switchChildPage(childPages[idx]);
+}
+
+function switchChildTab(btn,period){
+  btn.parentElement.querySelectorAll('.tab-item').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+const chatContainer = document.getElementById('elderChatContainer');
+
+function addMsg(text,type){
+  const wrapper = document.createElement('div');
+  wrapper.className = 'msg-wrapper '+(type==='bot'?'bot':'user');
+  if(type==='bot'){
+    const av = document.createElement('div');
+    av.className = 'companion-avatar small';
+    av.textContent = '🧓';
+    wrapper.appendChild(av);
+  }
+  const bubble = document.createElement('div');
+  bubble.className = 'msg-bubble '+(type==='bot'?'msg-bot':'msg-user');
+  bubble.textContent = text;
+  wrapper.appendChild(bubble);
+  chatContainer.appendChild(wrapper);
+  chatContainer.scrollTop = chatContainer.scrollHeight;
+}
+
+function showTyping(cb){
+  const wrapper = document.createElement('div');
+  wrapper.className = 'msg-wrapper bot';
+  wrapper.id = 'typing-indicator';
+  const av = document.createElement('div');
+  av.className = 'companion-avatar small';
+  av.textContent = '🧓';
+  wrapper.appendChild(av);
+  const bubble = document.createElement('div');
+  bubble.className = 'msg-bubble msg-bot';
+  bubble.innerHTML = '<div class="typing-dots"><span></span><span></span><span></span></div>';
+  wrapper.appendChild(bubble);
+  chatContainer.appendChild(wrapper);
+  chatContainer.scrollTop = chatContainer.scrollHeight;
+  setTimeout(()=>{
+    const ti = document.getElementById('typing-indicator');
+    if(ti) ti.remove();
+    cb();
+  },1200+Math.random()*800);
+}
+
+const botReplies = {
+  hi: ['王阿姨好呀！今天心情怎么样？','在呢在呢，您说，我听着~','看见您真高兴！想聊点什么？'],
+  weather: ['今天北京26°C，下午有小雨，出门记得带伞哦','明天是个大晴天，适合出去走走'],
+  health: ['您今天的血压138/85，稍微偏高，记得按时吃降压药哦。药在电视柜左边第二个抽屉里','您最近睡眠不太够，今晚早点休息吧，我9点提醒您'],
+  pill: ['该吃降压药了！用温水送服，吃完在健康打卡里点一下"已服用"，我就放心了','降压药吃了吗？没吃的话现在吃，我等着您打卡哦'],
+  story: ['我给您讲个笑话吧：有个老太太去银行取钱，柜员问"取多少"，老太太说"都取出来"，柜员一看余额——3块5。老太太说"怎么了，不够啊？"','想听什么故事？我这里有年轻时候的工厂故事、老北京胡同、还有您最喜欢的红楼梦...'],
+  video: ['好的王阿姨，我来帮您做一段心情短视频！您可以跟我说一句话、选张照片，或者录一段视频，我来帮您变成精美的短视频~','没问题！把您想记录的内容发给我，一句话、一张照片都可以，我帮您生成心情短视频，30秒就好！'],
+  lonely: ['不孤单，有我呢。我24小时都在，您什么时候想说话都行','您要是想孩子了，我帮您发个消息给他们？就说"妈妈想你们了"'],
+  eat: ['中午想吃点啥？天热，喝碗绿豆粥怎么样？','您早饭吃得不多，中午得多吃点。要不要我帮您点个外卖？'],
+  call: ['要我帮您给女儿打电话吗？我帮您拨过去','好的，正在呼叫女儿...（模拟中）'],
+  remind: ['您今天有三件事：1.上午9点吃降压药✅已吃 2.下午3点测血糖 3.晚上7点给花浇水。我都帮您记着呢！'],
+  chat: ['王阿姨，您年轻时候在纺织厂工作的故事再给我讲讲呗，上次说到您当上车间主任那段...','您今天去公园了吗？老张说他在那儿打太极呢'],
+  default: ['嗯嗯，您继续说~','是这样啊，我明白了','那后来呢？','您说得对','哈哈，真有意思']
+};
+
+function sendElderMsg(){
+  const input = document.getElementById('elderChatInput');
+  const text = input.value.trim();
+  if(!text) return;
+  input.value = '';
+
+  addMsg(text,'user');
+
+  showTyping(()=>{
+    let reply;
+    if(text.includes('药')||text.includes('吃')) reply = botReplies.pill;
+    else if(text.includes('视频')||text.includes('短视频')) reply = botReplies.video;
+    else if(text.includes('天气')) reply = botReplies.weather;
+    else if(text.includes('身体')||text.includes('血压')||text.includes('不舒服')) reply = botReplies.health;
+    else if(text.includes('故事')||text.includes('讲')) reply = botReplies.story;
+    else if(text.includes('孤独')||text.includes('想孩子')||text.includes('没人')) reply = botReplies.lonely;
+    else if(text.includes('吃')||text.includes('饭')||text.includes('饿')) reply = botReplies.eat;
+    else if(text.includes('打电话')||text.includes('联系')) reply = botReplies.call;
+    else if(text.includes('干嘛')||text.includes('做什么')||text.includes('今天')) reply = botReplies.remind;
+    else reply = botReplies.default;
+    addMsg(reply[Math.floor(Math.random()*reply.length)],'bot');
+  });
+}
+
+function sendProactive(type){
+  showTyping(()=>{
+    const replies = botReplies[type] || botReplies.chat;
+    addMsg(replies[Math.floor(Math.random()*replies.length)],'bot');
+  });
+}
+
+function sendVoiceMsg(){
+  const input = document.getElementById('elderChatInput');
+  const demos = ['小暖，今天天气怎么样','该吃药了吗','给我讲个故事吧','我有点想女儿了','中午吃点什么好'];
+  input.value = demos[Math.floor(Math.random()*demos.length)];
+  setTimeout(()=>sendElderMsg(),400);
+}
+
+switchElderPage('elder-home');
+switchChildPage('child-report');
+</script>
+
+</body>
+</html>

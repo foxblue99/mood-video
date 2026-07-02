@@ -1,0 +1,25 @@
+# WorkBuddy workspace
+.workbuddy/
+
+# OS files
+Thumbs.db
+Desktop.ini
+
+# Node
+node_modules/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.env
+venv/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log

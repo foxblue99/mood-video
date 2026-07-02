@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>心情视频V2 - 温暖版</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#EDE6DA;display:flex;flex-direction:column;align-items:center;min-height:100vh;padding:20px;font-family:-apple-system,'PingFang SC','Noto Sans SC',sans-serif;}
+h1.title{font-size:17px;font-weight:500;color:#6B5B4E;margin-bottom:18px;text-align:center;letter-spacing:.5px;}
+
+.phone{width:344px;background:#3D3228;border-radius:42px;border:3px solid #4A3F35;box-shadow:0 12px 36px rgba(0,0,0,0.3);overflow:hidden;position:relative;}
+.notch{width:130px;height:26px;background:#3D3228;border-radius:0 0 18px 18px;position:absolute;top:0;left:50%;transform:translateX(-50%);z-index:100;}
+.status-bar{background:#3D3228;color:#B8A999;font-size:11px;padding:8px 28px 5px;display:flex;justify-content:space-between;z-index:50;position:relative;}
+.screen{background:#FCF8F2;height:700px;overflow:hidden;position:relative;}
+
+.page{position:absolute;top:0;left:0;width:100%;height:700px;display:none;flex-direction:column;overflow-y:auto;overflow-x:hidden;}
+.page.active{display:flex;}
+
+.page::-webkit-scrollbar{width:0}
+
+.header-warm{padding:24px 18px 18px;text-align:center;flex-shrink:0;background:#FDF5EB;border-bottom:0.5px solid #EEE0CC}
+.header-title-warm{font-size:22px;font-weight:500;color:#5C4033;margin:0}
+.header-sub-warm{font-size:13px;color:#A8927D;margin-top:5px}
+
+.header-bar{background:#FDF5EB;padding:14px 16px;display:flex;align-items:center;gap:10px;border-bottom:0.5px solid #EEE0CC;flex-shrink:0}
+.back-btn{background:transparent;border:1px solid #D4C5AE;color:#8B7355;border-radius:8px;padding:7px 14px;font-size:14px;cursor:pointer;flex-shrink:0}
+
+.mood-row{display:flex;gap:8px;padding:12px 14px 4px;overflow-x:auto;flex-shrink:0}
+.mood-row::-webkit-scrollbar{display:none}
+.mood-chip{flex-shrink:0;padding:10px 16px;border-radius:22px;font-size:15px;font-weight:500;border:1.5px solid #E8D8C0;background:#FFFDF9;color:#7A6652;cursor:pointer;transition:all 0.15s}
+.mood-chip.sel{border-color:#E8A87C;background:#FFF5EB;color:#C0603A}
+
+.card{background:#FFFDF9;border-radius:18px;padding:18px;border:0.5px solid #F0E6D6;flex-shrink:0}
+.card-title{font-size:13px;color:#A8927D;margin-bottom:12px}
+textarea.big-input{width:100%;border:1.5px solid #E8D8C0;border-radius:14px;padding:14px;font-size:17px;resize:none;line-height:1.7;color:#4A3628;background:#FFFDF9;font-family:inherit}
+textarea.big-input:focus{outline:none;border-color:#E8A87C}
+
+.input-row{display:flex;gap:10px;margin-top:12px}
+.icon-btn{flex:1;padding:12px 4px;border-radius:14px;border:1px solid #EBDFCD;background:#FFFDF9;font-size:12px;font-weight:500;cursor:pointer;text-align:center;color:#7A6652;transition:all 0.15s}
+.icon-btn:hover{border-color:#E8A87C;background:#FFF5EB}
+.icon-btn .ico{display:block;font-size:24px;margin-bottom:4px}
+
+.big-btn{padding:16px;background:#E8A87C;color:white;border:none;border-radius:16px;font-size:18px;font-weight:500;cursor:pointer;width:calc(100% - 24px);margin:10px 12px;flex-shrink:0;transition:background 0.15s;letter-spacing:.5px}
+.big-btn:hover{background:#D4956E}
+.big-btn.gold{background:#C4A265}
+.big-btn.gold:hover{background:#B08F52}
+
+.sec-label{font-size:13px;color:#A8927D;padding:8px 14px 4px;font-weight:500;flex-shrink:0}
+.recent-item{display:flex;align-items:center;gap:12px;padding:12px 14px;margin:0 12px 8px;background:#FFFDF9;border-radius:14px;border:0.5px solid #F0E6D6;cursor:pointer;flex-shrink:0}
+.ri-thumb{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0}
+.ri-title{font-size:15px;font-weight:500;color:#4A3628}
+.ri-sub{font-size:12px;color:#A8927D;margin-top:3px}
+
+.bottom-nav{position:absolute;bottom:0;left:0;width:100%;background:#FFFDF9;border-top:.5px solid #EBDFCD;display:flex;z-index:90;padding-bottom:env(safe-area-inset-bottom,4px)}
+.nav-item{flex:1;padding:10px 2px 6px;text-align:center;cursor:pointer;font-size:10px;color:#B8A58E;transition:color 0.15s}
+.nav-item.active{color:#E8A87C}
+.nav-icon{font-size:22px;display:block;margin-bottom:3px}
+.spacer{height:64px;flex-shrink:0}
+
+.photo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:0 16px 12px}
+.photo-cell{aspect-ratio:1;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:32px;cursor:pointer;border:2px solid transparent;transition:all 0.15s}
+.photo-cell:hover{border-color:#E8A87C}
+
+.upload-zone{margin:16px;border:2px dashed #E0CCB0;border-radius:18px;padding:32px 16px;text-align:center;cursor:pointer;background:#FFFDF9}
+.upload-zone:hover{border-color:#E8A87C}
+.upload-icon{font-size:48px;margin-bottom:10px}
+.upload-title{font-size:18px;font-weight:500;color:#4A3628;margin-bottom:4px}
+.upload-sub{font-size:13px;color:#A8927D}
+
+.tip-box{margin:8px 16px;background:#FFF5EB;border-radius:14px;padding:14px 16px;border:0.5px solid #F5E0C8}
+.tip-title{font-size:14px;font-weight:500;color:#C0603A;margin-bottom:5px}
+.tip-body{font-size:13px;color:#7A6652;line-height:1.8}
+
+.gen-box{padding:20px 16px;flex-shrink:0}
+.gen-item{display:flex;align-items:flex-start;gap:14px;margin-bottom:18px}
+.gen-dot{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:500;flex-shrink:0;transition:background 0.3s}
+.gen-dot.done{background:#A8C97F;color:white}
+.gen-dot.running{background:#E8A87C;color:white}
+.gen-dot.wait{background:#EBDFCD;color:#C0B09A}
+.gen-label{font-size:15px;font-weight:500;color:#4A3628;line-height:1.5}
+.gen-sub{font-size:12px;color:#A8927D;margin-top:2px}
+.prog-bar{margin:4px 16px;background:#EBDFCD;border-radius:8px;height:12px;overflow:hidden}
+.prog-fill{height:100%;background:#E8A87C;border-radius:8px;transition:width .8s ease}
+.prog-text{text-align:center;padding:10px;font-size:13px;color:#A8927D;flex-shrink:0}
+.style-card{margin:8px 16px;background:#FFFDF9;border-radius:14px;padding:14px 16px;border:0.5px solid #F0E6D6;flex-shrink:0}
+.style-chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.style-chip{padding:8px 16px;border-radius:22px;border:1.5px solid #EBDFCD;font-size:13px;cursor:pointer;color:#7A6652;transition:all 0.15s}
+.style-chip.sel{border-color:#E8A87C;background:#FFF5EB;color:#C0603A}
+
+.vid-preview{margin:12px;border-radius:18px;height:210px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;flex-shrink:0}
+.vid-bg{position:absolute;inset:0;border-radius:18px}
+.vid-overlay{position:relative;z-index:2;text-align:center}
+.play-round{width:64px;height:64px;border-radius:50%;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:28px;color:white;margin:0 auto 10px}
+
+.tag-row{display:flex;gap:8px;padding:0 14px 6px;flex-wrap:wrap;flex-shrink:0}
+.tag-item{background:#FFF5EB;color:#C0603A;border-radius:20px;padding:7px 16px;font-size:13px;border:0.5px solid #F5E0C8}
+.cap-box{margin:6px 12px;background:#FFFDF9;border-radius:14px;padding:14px 16px;font-size:15px;color:#6B5B4E;line-height:1.9;border:0.5px solid #F0E6D6;flex-shrink:0}
+.share-label{font-size:13px;color:#A8927D;padding:6px 14px;flex-shrink:0}
+.share-row{display:flex;gap:8px;padding:0 12px 10px;flex-shrink:0}
+.share-btn{flex:1;padding:14px 4px;border-radius:14px;font-size:13px;font-weight:500;cursor:pointer;border:none;text-align:center}
+
+.vid-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;padding:14px}
+.vid-card{background:#FFFDF9;border-radius:14px;overflow:hidden;cursor:pointer;border:0.5px solid #F0E6D6}
+.vid-cover{height:95px;display:flex;align-items:center;justify-content:center;font-size:36px}
+.vid-meta{padding:8px 10px 12px}
+.vid-name{font-size:14px;font-weight:500;color:#4A3628}
+.vid-date{font-size:11px;color:#A8927D;margin-top:3px}
+
+.health-today{background:#FDF5EB;border-radius:18px;margin:12px;padding:18px;border:0.5px solid #F0D8B8}
+.health-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.health-date{font-size:16px;font-weight:500;color:#5C4033}
+.health-streak{font-size:13px;color:#C4A265;font-weight:500}
+.health-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.health-item{text-align:center;cursor:pointer;padding:8px 4px;border-radius:12px;transition:all 0.15s}
+.health-item:hover{background:rgba(232,168,124,0.1)}
+.health-icon{font-size:28px;margin-bottom:4px}
+.health-label{font-size:11px;color:#A8927D;margin-bottom:2px}
+.health-val{font-size:14px;font-weight:500;color:#4A3628}
+.health-unit{font-size:10px;color:#B8A58E}
+
+.health-section{margin:0 12px 12px}
+.health-sec-title{font-size:14px;font-weight:500;color:#5C4033;margin-bottom:8px}
+.health-log-list{display:flex;flex-direction:column;gap:8px}
+.health-log{background:#FFFDF9;border-radius:12px;padding:12px 14px;border:0.5px solid #F0E6D6;display:flex;align-items:center;gap:10px}
+.hlog-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.hlog-info{flex:1}
+.hlog-title{font-size:13px;font-weight:500;color:#4A3628}
+.hlog-meta{font-size:11px;color:#A8927D;margin-top:2px}
+.hlog-status{font-size:12px;font-weight:500;padding:4px 10px;border-radius:20px;flex-shrink:0}
+.hlog-status.good{background:#EAF3DE;color:#639922}
+.hlog-status.warn{background:#FCEBEB;color:#D85A30}
+
+.friend-feed{display:flex;flex-direction:column;gap:10px;padding:12px}
+.friend-post{background:#FFFDF9;border-radius:16px;border:0.5px solid #F0E6D6;overflow:hidden}
+.fp-hdr{display:flex;align-items:center;gap:10px;padding:12px 14px 8px}
+.fp-avatar{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.fp-name-row{flex:1}
+.fp-name{font-size:14px;font-weight:500;color:#4A3628}
+.fp-time{font-size:11px;color:#B8A58E;margin-top:2px}
+.fp-body{padding:0 14px 14px}
+.fp-vid{height:120px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:44px;margin-bottom:8px}
+.fp-text{font-size:14px;color:#5C4033;line-height:1.6}
+.fp-actions{display:flex;gap:14px;padding-top:8px;border-top:0.5px solid #F0E6D6}
+.fp-act{font-size:12px;color:#A8927D;cursor:pointer;display:flex;align-items:center;gap:3px}
+.fp-act:hover{color:#E8A87C}
+
+.mood-check-card{background:#FFFDF9;border-radius:16px;padding:16px;margin:12px;border:0.5px solid #F0E6D6;text-align:center}
+.mood-faces{display:flex;justify-content:space-between;margin:12px 0 8px}
+.mood-face{font-size:36px;cursor:pointer;padding:6px;border-radius:14px;transition:all 0.15s;border:2px solid transparent}
+.mood-face:hover,.mood-face.picked{border-color:#E8A87C;background:#FFF5EB}
+.emoji-label{font-size:11px;color:#A8927D}
+</style>
+</head>
+<body>
+<h1 class="title">心情视频V2 - 温暖版原型</h1>
+
+<div class="phone">
+  <div class="notch"></div>
+  <div class="status-bar"><span>9:41</span><span>WiFi</span></div>
+  <div class="screen">
+
+    <div class="page active" id="p-home">
+      <div class="header-warm">
+        <div class="header-title-warm">心情视频</div>
+        <div class="header-sub-warm">记录今天的小美好</div>
+      </div>
+      <div class="mood-row">
+        <span class="mood-chip sel" onclick="selMood(this)">开心</span>
+        <span class="mood-chip" onclick="selMood(this)">感恩</span>
+        <span class="mood-chip" onclick="selMood(this)">充实</span>
+        <span class="mood-chip" onclick="selMood(this)">思念</span>
+        <span class="mood-chip" onclick="selMood(this)">悠闲</span>
+        <span class="mood-chip" onclick="selMood(this)">期待</span>
+        <span class="mood-chip" onclick="selMood(this)">怀旧</span>
+      </div>
+      <div class="card" style="margin:10px 12px 6px">
+        <div class="card-title">说说今天的心情</div>
+        <textarea class="big-input" rows="2" placeholder="今天晒太阳散步，很舒服"></textarea>
+        <div class="input-row">
+          <div class="icon-btn" onclick="nav('p-photo')"><span class="ico">&#128247;</span>拍张照</div>
+          <div class="icon-btn" onclick="nav('p-video')"><span class="ico">&#127916;</span>录段视频</div>
+          <div class="icon-btn" onclick="nav('p-voice')"><span class="ico">&#127908;</span>说说话</div>
+        </div>
+      </div>
+      <div style="margin:0 12px 6px;display:flex;gap:8px">
+        <button class="big-btn" style="flex:1;margin:0;font-size:16px" onclick="nav('p-gen')">AI帮我生成</button>
+        <button class="big-btn gold" style="flex:1;margin:0;font-size:16px" onclick="nav('p-health')">今日健康打卡</button>
+      </div>
+      <div class="sec-label">最近创作</div>
+      <div class="recent-item" onclick="nav('p-result')">
+        <div class="ri-thumb" style="background:#FEF3E4">&#127800;</div>
+        <div><div class="ri-title">春天来了，公园的花开了</div><div class="ri-sub">昨天 · 6位老友点赞</div></div>
+      </div>
+      <div class="recent-item" onclick="nav('p-result')">
+        <div class="ri-thumb" style="background:#E8EFDE">&#9749;</div>
+        <div><div class="ri-title">早晨喝杯茶，心情舒畅</div><div class="ri-sub">3天前 · 分享到老友圈</div></div>
+      </div>
+      <div class="spacer"></div>
+      <div class="bottom-nav">
+        <div class="nav-item active"><span class="nav-icon">&#127968;</span>首页</div>
+        <div class="nav-item" onclick="nav('p-health')"><span class="nav-icon">&#10084;</span>健康</div>
+        <div class="nav-item" onclick="nav('p-friends')"><span class="nav-icon">&#128101;</span>老友圈</div>
+        <div class="nav-item"><span class="nav-icon">&#9881;</span>设置</div>
+      </div>
+    </div>
+
+    <div class="page" id="p-photo">
+      <div class="header-bar"><button class="back-btn" onclick="nav('p-home')">&larr; 返回</button><span style="font-size:18px;font-weight:500;color:#5C4033">选一张照片</span></div>
+      <div class="upload-zone" onclick="nav('p-gen')">
+        <div class="upload-icon">&#128247;</div>
+        <div class="upload-title">点这里从相册选一张</div>
+        <div class="upload-sub">挑一张今天最满意的照片</div>
+      </div>
+      <div style="text-align:center;color:#C8B89A;font-size:13px;padding:6px 0">最近照片</div>
+      <div class="photo-grid">
+        <div class="photo-cell" style="background:#FEF3E4" onclick="nav('p-gen')">&#127803;</div>
+        <div class="photo-cell" style="background:#E8EFDE" onclick="nav('p-gen')">&#127807;</div>
+        <div class="photo-cell" style="background:#FDE8EC" onclick="nav('p-gen')">&#128106;</div>
+        <div class="photo-cell" style="background:#E3ECF8" onclick="nav('p-gen')">&#127749;</div>
+        <div class="photo-cell" style="background:#F5E8F0" onclick="nav('p-gen')">&#9749;</div>
+        <div class="photo-cell" style="background:#FFF9E4" onclick="nav('p-gen')">&#127751;</div>
+      </div>
+      <button class="big-btn" onclick="nav('p-gen')">用这张照片生成视频</button>
+    </div>
+
+    <div class="page" id="p-video">
+      <div class="header-bar"><button class="back-btn" onclick="nav('p-home')">&larr; 返回</button><span style="font-size:18px;font-weight:500;color:#5C4033">录一段视频</span></div>
+      <div class="upload-zone" onclick="nav('p-gen')">
+        <div class="upload-icon">&#127916;</div>
+        <div class="upload-title">点这里选一段视频上传</div>
+        <div class="upload-sub">建议3分钟以内，AI会自动提取精彩片段</div>
+      </div>
+      <div class="tip-box">
+        <div class="tip-title">AI能帮您做什么</div>
+        <div class="tip-body">自动识别视频里的美好时刻，提取最美画面，配上温暖的音乐和文字，生成一个30秒的精致短视频。</div>
+      </div>
+      <button class="big-btn" style="margin-top:12px" onclick="nav('p-gen')">开始AI处理</button>
+    </div>
+
+    <div class="page" id="p-voice">
+      <div class="header-bar"><button class="back-btn" onclick="nav('p-home')">&larr; 返回</button><span style="font-size:18px;font-weight:500;color:#5C4033">说说心里话</span></div>
+      <div style="padding:20px 16px;display:flex;flex-direction:column;align-items:center">
+        <div style="background:#FFFDF9;border-radius:18px;border:.5px solid #F0E6D6;padding:28px 16px;width:100%;display:flex;flex-direction:column;align-items:center">
+          <div id="rec-btn" style="width:96px;height:96px;border-radius:50%;background:#E8A87C;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:40px;border:none;transition:background 0.2s" onclick="toggleRec()">&#127908;</div>
+          <div id="rec-status" style="font-size:17px;font-weight:500;color:#4A3628;margin-top:14px">点一下开始说话</div>
+          <div style="font-size:13px;color:#A8927D;margin-top:6px">说完了再点一下停止</div>
+          <div id="rec-text" style="display:none;width:100%;margin-top:14px;background:#FCF8F2;border-radius:12px;padding:14px;font-size:16px;color:#5C4033;min-height:56px;line-height:1.8"></div>
+        </div>
+        <div class="tip-box" style="margin-top:14px;width:100%">
+          <div class="tip-title">您可以这样说</div>
+          <div class="tip-body">"今天天气真好，出去走了走..."<br>"孩子们来看我了，很开心..."<br>"想起了年轻时候的事..."</div>
+        </div>
+      </div>
+      <button class="big-btn" onclick="nav('p-gen')">用录音生成视频</button>
+    </div>
+
+    <div class="page" id="p-gen">
+      <div class="header-warm"><div class="header-title-warm">AI创作中</div><div class="header-sub-warm">请稍等约30秒</div></div>
+      <div class="gen-box">
+        <div class="gen-item"><div class="gen-dot done" id="g1">&#10003;</div><div><div class="gen-label">理解您的心情</div><div class="gen-sub">分析内容，识别情绪色彩</div></div></div>
+        <div class="gen-item"><div class="gen-dot running" id="g2">2</div><div><div class="gen-label">创作视频画面</div><div class="gen-sub">AI绘制符合心情的画面</div></div></div>
+        <div class="gen-item"><div class="gen-dot wait" id="g3">3</div><div><div class="gen-label">匹配背景音乐</div><div class="gen-sub">智能推荐温暖旋律</div></div></div>
+        <div class="gen-item"><div class="gen-dot wait" id="g4">4</div><div><div class="gen-label">生成精美字幕</div><div class="gen-sub">自动撰写暖心文案</div></div></div>
+      </div>
+      <div class="prog-bar"><div class="prog-fill" id="prog" style="width:35%"></div></div>
+      <div class="prog-text" id="progT">AI正在创作画面...</div>
+      <div class="style-card">
+        <div style="font-size:13px;font-weight:500;color:#4A3628">选个喜欢的风格</div>
+        <div class="style-chips">
+          <div class="style-chip sel" onclick="selSty(this)">温馨家庭</div>
+          <div class="style-chip" onclick="selSty(this)">自然田园</div>
+          <div class="style-chip" onclick="selSty(this)">怀旧温暖</div>
+          <div class="style-chip" onclick="selSty(this)">简约清新</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="page" id="p-result">
+      <div class="header-warm"><div class="header-title-warm">视频创作完成</div><div class="header-sub-warm">点击播放预览吧</div></div>
+      <div class="vid-preview">
+        <div class="vid-bg" style="background:#3D2C20"></div>
+        <div class="vid-overlay">
+          <div style="font-size:56px;margin-bottom:8px">&#127803;</div>
+          <div style="color:rgba(255,255,255,.9);font-size:15px;font-weight:500;margin-bottom:6px">今天晒太阳散步，很舒服</div>
+          <div class="play-round">&#9654;</div>
+        </div>
+      </div>
+      <div class="tag-row">
+        <span class="tag-item">开心</span><span class="tag-item">日常</span><span class="tag-item">阳光</span>
+      </div>
+      <div class="cap-box">"午后的阳光很暖，慢慢走在小区的林荫道上，心里特别平静。这种简单的快乐，值得被记住。"</div>
+      <div class="share-label">分享到</div>
+      <div class="share-row">
+        <button class="share-btn" style="background:#07c160;color:white">微信家人</button>
+        <button class="share-btn" style="background:#1878f3;color:white">朋友圈</button>
+        <button class="share-btn" style="background:#C4A265;color:white" onclick="nav('p-friends')">老友圈</button>
+        <button class="share-btn" style="background:#F0E6D6;color:#7A6652;border:.5px solid #E0CCB0">保存</button>
+      </div>
+      <button class="big-btn" onclick="nav('p-home')">再创作一个</button>
+      <div style="height:16px"></div>
+    </div>
+
+    <!-- 健康打卡 -->
+    <div class="page" id="p-health">
+      <div class="header-warm">
+        <div class="header-title-warm">&#10084; 健康打卡</div>
+        <div class="header-sub-warm">每天记录，健康无忧</div>
+      </div>
+      <div class="health-today">
+        <div class="health-hdr">
+          <span class="health-date" id="healthDate">7月2日 周四</span>
+          <span class="health-streak">&#128293; 连续打卡 12 天</span>
+        </div>
+        <div class="health-grid">
+          <div class="health-item" onclick="alert('已记录：心情愉快')">
+            <div class="health-icon">&#128522;</div>
+            <div class="health-label">今日心情</div>
+            <div class="health-val">愉快</div>
+          </div>
+          <div class="health-item" onclick="alert('已记录：血压正常')">
+            <div class="health-icon">&#10084;</div>
+            <div class="health-label">血压</div>
+            <div class="health-val">128<span class="health-unit">/82</span></div>
+          </div>
+          <div class="health-item" onclick="alert('已记录：按时服药')">
+            <div class="health-icon">&#128138;</div>
+            <div class="health-label">用药</div>
+            <div class="health-val" style="color:#639922">已服用</div>
+          </div>
+          <div class="health-item" onclick="alert('已记录：今日步数')">
+            <div class="health-icon">&#128099;</div>
+            <div class="health-label">步数</div>
+            <div class="health-val">5,230</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mood-check-card">
+        <div style="font-size:14px;font-weight:500;color:#5C4033;margin-bottom:2px">今天心情怎么样？</div>
+        <div class="mood-faces">
+          <div>
+            <div class="mood-face" onclick="pickMood(this)">&#128557;</div>
+            <div class="emoji-label">不太好</div>
+          </div>
+          <div>
+            <div class="mood-face" onclick="pickMood(this)">&#128528;</div>
+            <div class="emoji-label">一般</div>
+          </div>
+          <div>
+            <div class="mood-face picked" onclick="pickMood(this)">&#128522;</div>
+            <div class="emoji-label">还不错</div>
+          </div>
+          <div>
+            <div class="mood-face" onclick="pickMood(this)">&#128513;</div>
+            <div class="emoji-label">很开心</div>
+          </div>
+          <div>
+            <div class="mood-face" onclick="pickMood(this)">&#129321;</div>
+            <div class="emoji-label">超级棒</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="health-section">
+        <div class="health-sec-title">今日健康记录</div>
+        <div class="health-log-list">
+          <div class="health-log">
+            <div class="hlog-icon" style="background:#FEF3E4">&#128138;</div>
+            <div class="hlog-info"><div class="hlog-title">降压药</div><div class="hlog-meta">早饭后 · 氨氯地平 1片</div></div>
+            <div class="hlog-status good">已完成</div>
+          </div>
+          <div class="health-log">
+            <div class="hlog-icon" style="background:#E8EFDE">&#127947;</div>
+            <div class="hlog-info"><div class="hlog-title">晨练太极拳</div><div class="hlog-meta">30分钟 · 公园</div></div>
+            <div class="hlog-status good">已完成</div>
+          </div>
+          <div class="health-log">
+            <div class="hlog-icon" style="background:#FDE8EC">&#10084;</div>
+            <div class="hlog-info"><div class="hlog-title">测血压</div><div class="hlog-meta">早晨 · 128/82 mmHg</div></div>
+            <div class="hlog-status good">正常</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="text-align:center;padding:6px 12px 4px">
+        <button onclick="alert('新提醒已设置')" style="background:#FFFDF9;border:1px solid #EBDFCD;border-radius:14px;padding:12px 24px;font-size:14px;color:#7A6652;cursor:pointer;width:100%">&#128276; 添加用药提醒</button>
+      </div>
+
+      <div class="spacer"></div>
+      <div class="bottom-nav">
+        <div class="nav-item" onclick="nav('p-home')"><span class="nav-icon">&#127968;</span>首页</div>
+        <div class="nav-item active"><span class="nav-icon">&#10084;</span>健康</div>
+        <div class="nav-item" onclick="nav('p-friends')"><span class="nav-icon">&#128101;</span>老友圈</div>
+        <div class="nav-item"><span class="nav-icon">&#9881;</span>设置</div>
+      </div>
+    </div>
+
+    <!-- 老友圈 -->
+    <div class="page" id="p-friends">
+      <div class="header-warm">
+        <div class="header-title-warm">&#128101; 老友圈</div>
+        <div class="header-sub-warm">老朋友的日常，都在这里</div>
+      </div>
+
+      <div class="friend-feed">
+        <div class="friend-post">
+          <div class="fp-hdr">
+            <div class="fp-avatar" style="background:#E8EFDE">&#127807;</div>
+            <div class="fp-name-row"><div class="fp-name">老张</div><div class="fp-time">1小时前</div></div>
+          </div>
+          <div class="fp-body">
+            <div class="fp-vid" style="background:#FEF3E4">&#127748;</div>
+            <div class="fp-text">今早去公园打太极，天气真好，心情舒畅！</div>
+            <div class="fp-actions">
+              <span class="fp-act" onclick="alert('已点赞')">&#128077; 8</span>
+              <span class="fp-act" onclick="alert('已留言')">&#128172; 3</span>
+              <span class="fp-act" onclick="alert('已分享')">&#128279; 分享</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="friend-post">
+          <div class="fp-hdr">
+            <div class="fp-avatar" style="background:#FDE8EC">&#127800;</div>
+            <div class="fp-name-row"><div class="fp-name">李阿姨</div><div class="fp-time">3小时前</div></div>
+          </div>
+          <div class="fp-body">
+            <div class="fp-vid" style="background:#E3ECF8">&#127858;</div>
+            <div class="fp-text">今天给老伴做了红烧肉，他吃得可香了！手艺还没退步嘛</div>
+            <div class="fp-actions">
+              <span class="fp-act" onclick="alert('已点赞')">&#128077; 15</span>
+              <span class="fp-act" onclick="alert('已留言')">&#128172; 5</span>
+              <span class="fp-act" onclick="alert('已分享')">&#128279; 分享</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="friend-post">
+          <div class="fp-hdr">
+            <div class="fp-avatar" style="background:#F5E8F0">&#127894;</div>
+            <div class="fp-name-row"><div class="fp-name">王大哥</div><div class="fp-time">昨天</div></div>
+          </div>
+          <div class="fp-body">
+            <div class="fp-vid" style="background:#FFF9E4">&#127754;</div>
+            <div class="fp-text">退休后第一次学画画，虽然画得不好但很开心！老有所学</div>
+            <div class="fp-actions">
+              <span class="fp-act" onclick="alert('已点赞')">&#128077; 22</span>
+              <span class="fp-act" onclick="alert('已留言')">&#128172; 7</span>
+              <span class="fp-act" onclick="alert('已分享')">&#128279; 分享</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="spacer"></div>
+      <div class="bottom-nav">
+        <div class="nav-item" onclick="nav('p-home')"><span class="nav-icon">&#127968;</span>首页</div>
+        <div class="nav-item" onclick="nav('p-health')"><span class="nav-icon">&#10084;</span>健康</div>
+        <div class="nav-item active"><span class="nav-icon">&#128101;</span>老友圈</div>
+        <div class="nav-item"><span class="nav-icon">&#9881;</span>设置</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- 设计说明 -->
+<div style="width:280px;background:#FFFDF9;border-radius:16px;padding:18px;border:.5px solid #F0E6D6;margin-left:16px;font-size:13px;color:#5C4033;line-height:1.8">
+  <div style="font-size:15px;font-weight:500;color:#5C4033;margin-bottom:12px;padding-bottom:10px;border-bottom:.5px solid #F0E6D6">V2 设计升级说明</div>
+  <div style="margin-bottom:10px;font-weight:500;color:#C0603A;font-size:13px">温暖配色</div>
+  <div style="margin-bottom:12px">从锐利橙色改为杏色/奶咖色系，背景米白柔和不刺眼，整体如翻看旧相册般温暖。</div>
+  <div style="margin-bottom:10px;font-weight:500;color:#C0603A;font-size:13px">健康打卡&#10084;</div>
+  <div style="margin-bottom:12px">每日记录心情/血压/用药/步数/睡眠，环形打卡鼓励连续性，异常自动提醒子女。</div>
+  <div style="margin-bottom:10px;font-weight:500;color:#C0603A;font-size:13px">老友圈&#128101;</div>
+  <div style="margin-bottom:12px">同龄人的社交空间，分享心情视频、互相点赞留言。比家人圈更自在，不必担心子女看到觉得不好意思。</div>
+  <div style="margin-bottom:10px;font-weight:500;color:#C0603A;font-size:13px">底部导航升级</div>
+  <div>首页 | 健康 | 老友圈 | 设置，4大模块清晰分工。</div>
+</div>
+
+</div>
+
+<script>
+function nav(id){document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active')});document.getElementById(id).classList.add('active');if(id==='p-gen')startGen();}
+
+function selMood(el){document.querySelectorAll('.mood-chip').forEach(function(c){c.classList.remove('sel')});el.classList.add('sel')}
+
+function selSty(el){document.querySelectorAll('.style-chip').forEach(function(c){c.classList.remove('sel')});el.classList.add('sel')}
+
+function pickMood(el){el.parentElement.parentElement.querySelectorAll('.mood-face').forEach(function(f){f.classList.remove('picked')});el.classList.add('picked')}
+
+var ra=false,rt=null;
+function toggleRec(){ra=!ra;var b=document.getElementById('rec-btn');var s=document.getElementById('rec-status');var t=document.getElementById('rec-text');if(ra){b.style.background='#C0603A';b.innerHTML='&#9209;';s.textContent='正在听您说话...';t.style.display='block';t.textContent='今天天气真好...';rt=setTimeout(function(){t.textContent='今天天气真好，出去散了步，小区里的花都开了，心情特别舒畅。'},2000)}else{b.style.background='#E8A87C';b.innerHTML='&#127908;';s.textContent='说完了！可以生成视频了';clearTimeout(rt)}}
+
+var gt=null;
+function startGen(){var p=document.getElementById('prog'),t=document.getElementById('progT'),ss=[{w:'35%',x:'AI正在创作画面...',g2:'running',g3:'wait',g4:'wait'},{w:'60%',x:'画面完成，正在配乐...',g2:'done',g3:'running',g4:'wait'},{w:'82%',x:'音乐就绪，生成字幕...',g2:'done',g3:'done',g4:'running'},{w:'100%',x:'即将完成...',g2:'done',g3:'done',g4:'done'}],i=0;clearInterval(gt);gt=setInterval(function(){if(i<ss.length){var s=ss[i];p.style.width=s.w;t.textContent=s.x;['g2','g3','g4'].forEach(function(k){var e=document.getElementById(k),c=s[k];e.className='gen-dot '+c;e.textContent=c==='done'?'\u2713':(k==='g2'?'2':k==='g3'?'3':'4')});i++}else{clearInterval(gt);setTimeout(function(){nav('p-result')},700)}},1600)}
+</script>
+</body>
+</html>

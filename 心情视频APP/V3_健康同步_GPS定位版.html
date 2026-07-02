@@ -1,0 +1,1165 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>心情视频V3 - 健康同步+GPS定位</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#EDE6DA;display:flex;flex-direction:column;align-items:center;min-height:100vh;padding:20px 20px 40px;font-family:-apple-system,'PingFang SC','Noto Sans SC',sans-serif;}
+h1.title{font-size:17px;font-weight:500;color:#6B5B4E;margin-bottom:18px;text-align:center;letter-spacing:.5px;}
+.phone-wrap{display:flex;gap:24px;align-items:flex-start;flex-wrap:wrap;justify-content:center;max-width:1100px;width:100%}
+.phone{width:344px;background:#3D3228;border-radius:42px;border:3px solid #4A3F35;box-shadow:0 12px 36px rgba(0,0,0,0.3);overflow:hidden;position:relative;flex-shrink:0}
+.notch{width:130px;height:26px;background:#3D3228;border-radius:0 0 18px 18px;position:absolute;top:0;left:50%;transform:translateX(-50%);z-index:100}
+.status-bar{background:#3D3228;color:#B8A999;font-size:11px;padding:8px 28px 5px;display:flex;justify-content:space-between;z-index:50;position:relative}
+.screen{background:#FCF8F2;height:700px;overflow:hidden;position:relative}
+.page{position:absolute;top:0;left:0;width:100%;height:700px;display:none;flex-direction:column;overflow-y:auto;overflow-x:hidden}
+.page.active{display:flex}
+.page::-webkit-scrollbar{width:0}
+.header-warm{padding:24px 18px 18px;text-align:center;flex-shrink:0;background:#FDF5EB;border-bottom:0.5px solid #EEE0CC}
+.header-title-warm{font-size:22px;font-weight:500;color:#5C4033;margin:0}
+.header-sub-warm{font-size:13px;color:#A8927D;margin-top:5px}
+.header-bar{background:#FDF5EB;padding:14px 16px;display:flex;align-items:center;gap:10px;border-bottom:0.5px solid #EEE0CC;flex-shrink:0}
+.back-btn{background:transparent;border:1px solid #D4C5AE;color:#8B7355;border-radius:8px;padding:7px 14px;font-size:14px;cursor:pointer;flex-shrink:0}
+.mood-row{display:flex;gap:8px;padding:12px 14px 4px;overflow-x:auto;flex-shrink:0}
+.mood-row::-webkit-scrollbar{display:none}
+.mood-chip{flex-shrink:0;padding:10px 16px;border-radius:22px;font-size:15px;font-weight:500;border:1.5px solid #E8D8C0;background:#FFFDF9;color:#7A6652;cursor:pointer;transition:all 0.15s}
+.mood-chip.sel{border-color:#E8A87C;background:#FFF5EB;color:#C0603A}
+.card{background:#FFFDF9;border-radius:18px;padding:18px;border:0.5px solid #F0E6D6;flex-shrink:0}
+.card-title{font-size:13px;color:#A8927D;margin-bottom:12px}
+textarea.big-input{width:100%;border:1.5px solid #E8D8C0;border-radius:14px;padding:14px;font-size:17px;resize:none;line-height:1.7;color:#4A3628;background:#FFFDF9;font-family:inherit}
+textarea.big-input:focus{outline:none;border-color:#E8A87C}
+.input-row{display:flex;gap:10px;margin-top:12px}
+.icon-btn{flex:1;padding:12px 4px;border-radius:14px;border:1px solid #EBDFCD;background:#FFFDF9;font-size:12px;font-weight:500;cursor:pointer;text-align:center;color:#7A6652;transition:all 0.15s}
+.icon-btn:hover{border-color:#E8A87C;background:#FFF5EB}
+.icon-btn .ico{display:block;font-size:24px;margin-bottom:4px}
+.big-btn{padding:16px;background:#E8A87C;color:white;border:none;border-radius:16px;font-size:18px;font-weight:500;cursor:pointer;width:calc(100% - 24px);margin:10px 12px;flex-shrink:0;transition:background 0.15s;letter-spacing:.5px}
+.big-btn:hover{background:#D4956E}
+.big-btn.gold{background:#C4A265}
+.big-btn.gold:hover{background:#B08F52}
+.big-btn.red{background:#D85A30}
+.big-btn.red:hover{background:#C24E28}
+.big-btn.green{background:#639922}
+.big-btn.green:hover{background:#53801b}
+.sec-label{font-size:13px;color:#A8927D;padding:8px 14px 4px;font-weight:500;flex-shrink:0}
+.recent-item{display:flex;align-items:center;gap:12px;padding:12px 14px;margin:0 12px 8px;background:#FFFDF9;border-radius:14px;border:0.5px solid #F0E6D6;cursor:pointer;flex-shrink:0}
+.ri-thumb{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0}
+.ri-title{font-size:15px;font-weight:500;color:#4A3628}
+.ri-sub{font-size:12px;color:#A8927D;margin-top:3px}
+.bottom-nav{position:absolute;bottom:0;left:0;width:100%;background:#FFFDF9;border-top:.5px solid #EBDFCD;display:flex;z-index:90;padding-bottom:env(safe-area-inset-bottom,4px)}
+.nav-item{flex:1;padding:8px 2px 6px;text-align:center;cursor:pointer;font-size:10px;color:#B8A58E;transition:color 0.15s}
+.nav-item.active{color:#E8A87C}
+.nav-icon{font-size:20px;display:block;margin-bottom:3px}
+.spacer{height:64px;flex-shrink:0}
+.photo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:0 16px 12px}
+.photo-cell{aspect-ratio:1;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:32px;cursor:pointer;border:2px solid transparent;transition:all 0.15s}
+.photo-cell:hover{border-color:#E8A87C}
+.upload-zone{margin:16px;border:2px dashed #E0CCB0;border-radius:18px;padding:32px 16px;text-align:center;cursor:pointer;background:#FFFDF9}
+.upload-zone:hover{border-color:#E8A87C}
+.upload-icon{font-size:48px;margin-bottom:10px}
+.upload-title{font-size:18px;font-weight:500;color:#4A3628;margin-bottom:4px}
+.upload-sub{font-size:13px;color:#A8927D}
+.tip-box{margin:8px 16px;background:#FFF5EB;border-radius:14px;padding:14px 16px;border:0.5px solid #F5E0C8}
+.tip-title{font-size:14px;font-weight:500;color:#C0603A;margin-bottom:5px}
+.tip-body{font-size:13px;color:#7A6652;line-height:1.8}
+.gen-box{padding:20px 16px;flex-shrink:0}
+.gen-item{display:flex;align-items:flex-start;gap:14px;margin-bottom:18px}
+.gen-dot{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:500;flex-shrink:0;transition:background 0.3s}
+.gen-dot.done{background:#A8C97F;color:white}
+.gen-dot.running{background:#E8A87C;color:white}
+.gen-dot.wait{background:#EBDFCD;color:#C0B09A}
+.gen-label{font-size:15px;font-weight:500;color:#4A3628;line-height:1.5}
+.gen-sub{font-size:12px;color:#A8927D;margin-top:2px}
+.prog-bar{margin:4px 16px;background:#EBDFCD;border-radius:8px;height:12px;overflow:hidden}
+.prog-fill{height:100%;background:#E8A87C;border-radius:8px;transition:width .8s ease}
+.prog-text{text-align:center;padding:10px;font-size:13px;color:#A8927D;flex-shrink:0}
+.style-card{margin:8px 16px;background:#FFFDF9;border-radius:14px;padding:14px 16px;border:0.5px solid #F0E6D6;flex-shrink:0}
+.style-chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.style-chip{padding:8px 16px;border-radius:22px;border:1.5px solid #EBDFCD;font-size:13px;cursor:pointer;color:#7A6652;transition:all 0.15s}
+.style-chip.sel{border-color:#E8A87C;background:#FFF5EB;color:#C0603A}
+.vid-preview{margin:12px;border-radius:18px;height:210px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;flex-shrink:0}
+.vid-bg{position:absolute;inset:0;border-radius:18px}
+.vid-overlay{position:relative;z-index:2;text-align:center}
+.play-round{width:64px;height:64px;border-radius:50%;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:28px;color:white;margin:0 auto 10px}
+.tag-row{display:flex;gap:8px;padding:0 14px 6px;flex-wrap:wrap;flex-shrink:0}
+.tag-item{background:#FFF5EB;color:#C0603A;border-radius:20px;padding:7px 16px;font-size:13px;border:0.5px solid #F5E0C8}
+.cap-box{margin:6px 12px;background:#FFFDF9;border-radius:14px;padding:14px 16px;font-size:15px;color:#6B5B4E;line-height:1.9;border:0.5px solid #F0E6D6;flex-shrink:0}
+.share-label{font-size:13px;color:#A8927D;padding:6px 14px;flex-shrink:0}
+.share-row{display:flex;gap:8px;padding:0 12px 10px;flex-shrink:0}
+.share-btn{flex:1;padding:14px 4px;border-radius:14px;font-size:13px;font-weight:500;cursor:pointer;border:none;text-align:center}
+.vid-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;padding:14px}
+.vid-card{background:#FFFDF9;border-radius:14px;overflow:hidden;cursor:pointer;border:0.5px solid #F0E6D6}
+.vid-cover{height:95px;display:flex;align-items:center;justify-content:center;font-size:36px}
+.vid-meta{padding:8px 10px 12px}
+.vid-name{font-size:14px;font-weight:500;color:#4A3628}
+.vid-date{font-size:11px;color:#A8927D;margin-top:3px}
+
+.sync-badge{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:500}
+.sync-badge.synced{background:#EAF3DE;color:#639922}
+.sync-badge.pending{background:#FAEEDA;color:#BA7517}
+.sync-badge.alert{background:#FCEBEB;color:#D85A30}
+
+.health-today{background:#FDF5EB;border-radius:18px;margin:12px;padding:18px;border:0.5px solid #F0D8B8}
+.health-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.health-date{font-size:16px;font-weight:500;color:#5C4033}
+.health-streak{font-size:13px;color:#C4A265;font-weight:500}
+.health-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px}
+.health-item{text-align:center;cursor:pointer;padding:10px 4px;border-radius:12px;transition:all 0.15s;background:#FFFDF9;border:0.5px solid #F0E6D6;position:relative}
+.health-item:hover{background:rgba(232,168,124,0.05)}
+.health-icon{font-size:28px;margin-bottom:4px}
+.health-label{font-size:11px;color:#A8927D;margin-bottom:2px}
+.health-val{font-size:14px;font-weight:500;color:#4A3628}
+.health-unit{font-size:10px;color:#B8A58E}
+.health-sync-dot{position:absolute;top:6px;right:6px;width:8px;height:8px;border-radius:50%}
+.health-sync-dot.on{background:#639922}
+.health-sync-dot.off{background:#D3D1C7}
+.health-section{margin:0 12px 12px}
+.health-sec-title{font-size:14px;font-weight:500;color:#5C4033;margin-bottom:8px}
+.health-log-list{display:flex;flex-direction:column;gap:8px}
+.health-log{background:#FFFDF9;border-radius:12px;padding:12px 14px;border:0.5px solid #F0E6D6;display:flex;align-items:center;gap:10px}
+.hlog-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.hlog-info{flex:1}
+.hlog-title{font-size:13px;font-weight:500;color:#4A3628}
+.hlog-meta{font-size:11px;color:#A8927D;margin-top:2px}
+.hlog-status{font-size:12px;font-weight:500;padding:4px 10px;border-radius:20px;flex-shrink:0}
+.hlog-status.good{background:#EAF3DE;color:#639922}
+.hlog-status.warn{background:#FCEBEB;color:#D85A30}
+
+.family-sync-bar{display:flex;align-items:center;gap:10px;margin:0 12px 8px;padding:12px 14px;background:#FFFDF9;border-radius:14px;border:0.5px solid #F0E6D6;flex-shrink:0}
+.fs-avatar{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.fs-info{flex:1}
+.fs-name{font-size:13px;font-weight:500;color:#4A3628}
+.fs-status{font-size:11px;color:#A8927D}
+.fs-action{font-size:12px;color:#E8A87C;cursor:pointer;font-weight:500}
+
+.mood-check-card{background:#FFFDF9;border-radius:16px;padding:16px;margin:12px;border:0.5px solid #F0E6D6;text-align:center}
+.mood-faces{display:flex;justify-content:space-between;margin:12px 0 8px}
+.mood-face{font-size:36px;cursor:pointer;padding:6px;border-radius:14px;transition:all 0.15s;border:2px solid transparent}
+.mood-face:hover,.mood-face.picked{border-color:#E8A87C;background:#FFF5EB}
+.emoji-label{font-size:11px;color:#A8927D}
+
+.friend-feed{display:flex;flex-direction:column;gap:10px;padding:12px}
+.friend-post{background:#FFFDF9;border-radius:16px;border:0.5px solid #F0E6D6;overflow:hidden}
+.fp-hdr{display:flex;align-items:center;gap:10px;padding:12px 14px 8px}
+.fp-avatar{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.fp-name-row{flex:1}
+.fp-name{font-size:14px;font-weight:500;color:#4A3628}
+.fp-time{font-size:11px;color:#B8A58E;margin-top:2px}
+.fp-body{padding:0 14px 14px}
+.fp-vid{height:120px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:44px;margin-bottom:8px}
+.fp-text{font-size:14px;color:#5C4033;line-height:1.6}
+.fp-actions{display:flex;gap:14px;padding-top:8px;border-top:0.5px solid #F0E6D6}
+.fp-act{font-size:12px;color:#A8927D;cursor:pointer;display:flex;align-items:center;gap:3px}
+.fp-act:hover{color:#E8A87C}
+
+.loc-map{position:relative;margin:0;height:280px;flex-shrink:0;overflow:hidden}
+.loc-map-bg{width:100%;height:100%;display:flex;align-items:center;justify-content:center;flex-direction:column;background:linear-gradient(135deg,#E8D8C0 0%,#F5E8D0 50%,#FDF5EB 100%);position:relative}
+.loc-pin{position:absolute;top:120px;left:160px;display:flex;flex-direction:column;align-items:center;z-index:5;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+.loc-pin-dot{width:24px;height:24px;border-radius:50%;background:#D85A30;border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.15)}
+.loc-pin-shadow{width:8px;height:8px;border-radius:50%;background:rgba(216,90,48,0.3);margin-top:-2px}
+.loc-marker{position:absolute;font-size:32px;z-index:4}
+.loc-roads{position:absolute;inset:0;overflow:hidden}
+.loc-road{position:absolute;background:#E0C8A0;border-radius:8px}
+.loc-info-overlay{position:absolute;bottom:0;left:0;right:0;background:rgba(255,253,249,0.95);padding:14px 16px;z-index:10;border-top:0.5px solid #F0E0C8}
+.loc-addr{font-size:14px;font-weight:500;color:#4A3628;margin-bottom:4px}
+.loc-updated{font-size:11px;color:#A8927D}
+
+.stat-row{display:flex;gap:8px;margin:8px 12px;flex-shrink:0}
+.stat-card{flex:1;background:#FFFDF9;border-radius:14px;padding:14px 10px;text-align:center;border:0.5px solid #F0E6D6}
+.stat-icon{font-size:24px;margin-bottom:4px}
+.stat-label{font-size:11px;color:#A8927D}
+.stat-val{font-size:16px;font-weight:500;color:#4A3628;margin-top:2px}
+
+.sos-card{margin:12px;border-radius:20px;padding:24px;text-align:center;flex-shrink:0}
+.sos-big-btn{width:120px;height:120px;border-radius:50%;border:4px solid white;cursor:pointer;box-shadow:0 4px 24px rgba(216,90,48,0.35);margin:0 auto;display:flex;align-items:center;justify-content:center;flex-direction:column;font-size:20px;font-weight:500;color:white;transition:all 0.2s}
+.sos-big-btn:active{transform:scale(0.95)}
+.sos-big-btn.armed:hover{transform:scale(0.95);box-shadow:0 6px 32px rgba(216,90,48,0.5)}
+.sos-inst{font-size:14px;color:#7A6652;line-height:1.8;margin-bottom:8px}
+
+.geofence-list{display:flex;flex-direction:column;gap:8px;margin:8px 12px;flex-shrink:0}
+.geofence-item{display:flex;align-items:center;gap:12px;background:#FFFDF9;border-radius:14px;padding:14px;border:0.5px solid #F0E6D6}
+.gf-icon{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.gf-info{flex:1}
+.gf-name{font-size:14px;font-weight:500;color:#4A3628}
+.gf-range{font-size:11px;color:#A8927D;margin-top:2px}
+.gf-toggle{width:44px;height:26px;border-radius:13px;cursor:pointer;position:relative;transition:background 0.2s;border:none}
+.gf-toggle.on{background:#639922}
+.gf-toggle.off{background:#D3D1C7}
+.gf-toggle::after{content:'';position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:white;transition:left 0.2s}
+.gf-toggle.on::after{left:21px}
+
+.history-timeline{display:flex;flex-direction:column;gap:6px;margin:8px 12px;flex-shrink:0}
+.timeline-item{display:flex;align-items:center;gap:12px;background:#FFFDF9;border-radius:12px;padding:12px 14px;border:0.5px solid #F0E6D6}
+.tl-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.tl-dot.home{background:#639922}
+.tl-dot.out{background:#E8A87C}
+.tl-dot.warn{background:#D85A30}
+.tl-info{flex:1}
+.tl-addr{font-size:13px;font-weight:500;color:#4A3628}
+.tl-time{font-size:11px;color:#A8927D;margin-top:2px}
+
+.family-panel{margin:12px;background:#FFFDF9;border-radius:18px;border:0.5px solid #F0E6D6;overflow:hidden}
+.family-panel-title{padding:16px 16px 10px;font-size:14px;font-weight:500;color:#5C4033}
+.family-member{display:flex;align-items:center;gap:12px;padding:12px 16px;border-top:0.5px solid #F5EDE3}
+.fm-avatar{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.fm-info{flex:1}
+.fm-name{font-size:14px;font-weight:500;color:#4A3628}
+.fm-relation{font-size:11px;color:#A8927D}
+.fm-badge{font-size:11px;padding:4px 12px;border-radius:20px;flex-shrink:0}
+.fm-badge.active{background:#EAF3DE;color:#639922}
+.fm-badge.invite{background:#FAEEDA;color:#BA7517}
+
+.qr-section{text-align:center;margin:16px 12px}
+.qr-box{width:180px;height:180px;border-radius:18px;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;border:2px solid #E8D8C0;font-size:80px;background:#FFFDF9}
+.invite-code-box{background:#FFFDF9;border-radius:14px;border:1px solid #F0E6D6;padding:14px 20px;display:inline-flex;align-items:center;gap:12px}
+.invite-code-num{font-size:22px;font-weight:500;color:#4A3628;letter-spacing:4px}
+.invite-code-copy{font-size:13px;color:#E8A87C;cursor:pointer;font-weight:500}
+
+.alert-card{margin:8px 12px;border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:10px;flex-shrink:0}
+.alert-card.danger{background:#FCEBEB;border:0.5px solid #F7C1C1}
+.alert-card.warning{background:#FAEEDA;border:0.5px solid #FAC775}
+.alert-card.info{background:#E6F1FB;border:0.5px solid #B5D4F4}
+.alert-icon{font-size:24px;flex-shrink:0}
+.alert-body{flex:1}
+.alert-title{font-size:13px;font-weight:500;color:#4A3628;margin-bottom:2px}
+.alert-desc{font-size:11px;color:#7A6652}
+.alert-action{font-size:12px;font-weight:500;cursor:pointer;flex-shrink:0;padding:6px 12px;border-radius:20px;border:none}
+.alert-card.danger .alert-action{background:#E24B4A;color:white}
+.alert-card.warning .alert-action{background:#EF9F27;color:white}
+.alert-card.info .alert-action{background:#378ADD;color:white}
+
+.child-view-tabs{display:flex;gap:4px;margin:10px 12px 6px;flex-shrink:0}
+.child-view-tab{flex:1;text-align:center;padding:10px 4px;font-size:14px;font-weight:500;border-radius:12px;cursor:pointer;background:#F5EDE3;color:#A8927D;border:none;transition:all 0.15s}
+.child-view-tab.sel{background:#FFFDF9;color:#E8A87C;border:0.5px solid #F0E6D6}
+
+.modal-overlay{position:absolute;inset:0;background:rgba(0,0,0,0.4);z-index:200;display:none;align-items:center;justify-content:center}
+.modal-overlay.show{display:flex}
+.modal-card{background:#FFFDF9;border-radius:20px;width:280px;padding:24px;text-align:center}
+.modal-title{font-size:18px;font-weight:500;color:#5C4033;margin-bottom:8px}
+.modal-body{font-size:14px;color:#7A6652;line-height:1.7;margin-bottom:20px}
+.modal-btns{display:flex;gap:8px}
+.modal-btn{flex:1;padding:12px;border-radius:12px;font-size:14px;font-weight:500;cursor:pointer;border:none}
+.modal-btn.primary{background:#E8A87C;color:white}
+.modal-btn.secondary{background:#F0E6D6;color:#7A6652}
+
+.battery-indicator{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:500}
+.battery-bar{width:36px;height:16px;border-radius:4px;border:1px solid;position:relative;padding:2px}
+.battery-fill{height:100%;border-radius:2px}
+.battery-bar.good{border-color:#639922}.battery-fill.good{background:#639922}
+.battery-bar.mid{border-color:#EF9F27}.battery-fill.mid{background:#EF9F27}
+.battery-bar.low{border-color:#D85A30}.battery-fill.low{background:#D85A30}
+</style>
+</head>
+<body>
+<h1 class="title">心情视频V3 - 健康同步 + GPS定位防走失</h1>
+
+<div class="phone-wrap">
+
+<!-- ================ 老人端手机 ================ -->
+<div class="phone" id="elderPhone">
+  <div class="notch"></div>
+  <div class="status-bar"><span>9:41</span><span>WiFi</span></div>
+  <div class="screen">
+
+    <!-- 首页 -->
+    <div class="page active" id="p-home">
+      <div class="header-warm">
+        <div class="header-title-warm">心情视频</div>
+        <div class="header-sub-warm">记录今天的小美好</div>
+      </div>
+      <div class="mood-row">
+        <span class="mood-chip sel" onclick="selMood(this)">开心</span>
+        <span class="mood-chip" onclick="selMood(this)">感恩</span>
+        <span class="mood-chip" onclick="selMood(this)">充实</span>
+        <span class="mood-chip" onclick="selMood(this)">思念</span>
+        <span class="mood-chip" onclick="selMood(this)">悠闲</span>
+        <span class="mood-chip" onclick="selMood(this)">期待</span>
+        <span class="mood-chip" onclick="selMood(this)">怀旧</span>
+      </div>
+      <div class="card" style="margin:10px 12px 6px">
+        <div class="card-title">说说今天的心情</div>
+        <textarea class="big-input" rows="2" placeholder="今天晒太阳散步，很舒服"></textarea>
+        <div class="input-row">
+          <div class="icon-btn" onclick="navE('p-photo')">&#9999; 拍张照</div>
+          <div class="icon-btn" onclick="navE('p-video')">&#9999; 录视频</div>
+          <div class="icon-btn" onclick="navE('p-voice')">&#9999; 说说话</div>
+        </div>
+      </div>
+      <div style="margin:0 12px 6px;display:flex;gap:8px">
+        <button class="big-btn" style="flex:1;margin:0;font-size:15px" onclick="navE('p-gen')">AI帮我生成</button>
+        <button class="big-btn gold" style="flex:1;margin:0;font-size:15px" onclick="navE('p-health')">今日健康打卡</button>
+      </div>
+      <div class="family-sync-bar" onclick="navE('p-family')">
+        <div class="fs-avatar" style="background:#E8EFDE">&#9999;</div>
+        <div class="fs-info"><div class="fs-name">已连接女儿 小芳</div><div class="fs-status">健康数据实时同步中</div></div>
+        <div class="fs-action">查看 &gt;</div>
+      </div>
+      <div class="sec-label">最近创作</div>
+      <div class="recent-item" onclick="navE('p-result')">
+        <div class="ri-thumb" style="background:#FEF3E4">&#9999;</div>
+        <div><div class="ri-title">春天来了，公园的花开了</div><div class="ri-sub">昨天 · 已同步给女儿 · 6位点赞</div></div>
+      </div>
+      <div class="recent-item" onclick="navE('p-result')">
+        <div class="ri-thumb" style="background:#E8EFDE">&#9999;</div>
+        <div><div class="ri-title">早晨喝杯茶，心情舒畅</div><div class="ri-sub">3天前 · 分享到老友圈</div></div>
+      </div>
+      <div class="spacer"></div>
+      <div class="bottom-nav">
+        <div class="nav-item active"><span class="nav-icon">&#9999;</span>首页</div>
+        <div class="nav-item" onclick="navE('p-health')"><span class="nav-icon">&#9999;</span>健康</div>
+        <div class="nav-item" onclick="navE('p-location')"><span class="nav-icon">&#9999;</span>位置</div>
+        <div class="nav-item" onclick="navE('p-friends')"><span class="nav-icon">&#9999;</span>老友圈</div>
+        <div class="nav-item" onclick="navE('p-settings')"><span class="nav-icon">&#9999;</span>设置</div>
+      </div>
+    </div>
+
+    <!-- 健康打卡（含同步状态） -->
+    <div class="page" id="p-health">
+      <div class="header-warm">
+        <div class="header-title-warm">&#9999; 健康打卡</div>
+        <div class="header-sub-warm">每天记录，子女也能看到</div>
+      </div>
+      <div class="family-sync-bar" onclick="navE('p-family')">
+        <div class="fs-avatar" style="background:#E8EFDE">&#9999;</div>
+        <div class="fs-info"><div class="fs-name">同步到女儿 小芳</div><div class="fs-status">刚刚同步 · 女儿已查看</div></div>
+        <span class="sync-badge synced">&#9999; 已同步</span>
+      </div>
+      <div class="health-today">
+        <div class="health-hdr">
+          <span class="health-date" id="healthDate">7月2日 周四</span>
+          <span class="health-streak">&#9999; 连续打卡 12 天</span>
+        </div>
+        <div class="health-grid">
+          <div class="health-item" onclick="alert('已记录：心情愉快\\n&#9999; 已同步给女儿')">
+            <div class="health-sync-dot on"></div>
+            <div class="health-icon">&#9999;</div>
+            <div class="health-label">今日心情</div>
+            <div class="health-val">愉快</div>
+          </div>
+          <div class="health-item" onclick="alert('已记录：血压正常\\n&#9999; 已同步给女儿')">
+            <div class="health-sync-dot on"></div>
+            <div class="health-icon">&#9999;</div>
+            <div class="health-label">血压</div>
+            <div class="health-val">128<span class="health-unit">/82</span></div>
+          </div>
+          <div class="health-item" onclick="alert('已记录：按时服药\\n&#9999; 已同步给女儿')">
+            <div class="health-sync-dot on"></div>
+            <div class="health-icon">&#9999;</div>
+            <div class="health-label">用药</div>
+            <div class="health-val" style="color:#639922">已服用</div>
+          </div>
+        </div>
+        <div class="health-grid">
+          <div class="health-item" onclick="alert('已记录：5230步\\n&#9999; 已同步给女儿')">
+            <div class="health-sync-dot on"></div>
+            <div class="health-icon">&#9999;</div>
+            <div class="health-label">步数</div>
+            <div class="health-val">5,230</div>
+          </div>
+          <div class="health-item" onclick="alert('已记录：7.5小时\\n&#9999; 已同步给女儿')">
+            <div class="health-sync-dot on"></div>
+            <div class="health-icon">&#9999;</div>
+            <div class="health-label">睡眠</div>
+            <div class="health-val">7.5<span class="health-unit">h</span></div>
+          </div>
+          <div class="health-item" onclick="alert('已记录：血糖正常\\n&#9999; 已同步给女儿')">
+            <div class="health-sync-dot on"></div>
+            <div class="health-icon">&#9999;</div>
+            <div class="health-label">血糖</div>
+            <div class="health-val" style="color:#639922">5.6</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mood-check-card">
+        <div style="font-size:14px;font-weight:500;color:#5C4033;margin-bottom:2px">今天心情怎么样？</div>
+        <div class="mood-faces">
+          <div><div class="mood-face" onclick="pickMood(this)">&#9999;</div><div class="emoji-label">不太好</div></div>
+          <div><div class="mood-face" onclick="pickMood(this)">&#9999;</div><div class="emoji-label">一般</div></div>
+          <div><div class="mood-face picked" onclick="pickMood(this)">&#9999;</div><div class="emoji-label">还不错</div></div>
+          <div><div class="mood-face" onclick="pickMood(this)">&#9999;</div><div class="emoji-label">很开心</div></div>
+          <div><div class="mood-face" onclick="pickMood(this)">&#9999;</div><div class="emoji-label">超级棒</div></div>
+        </div>
+      </div>
+
+      <div class="health-section">
+        <div class="health-sec-title">今日健康记录</div>
+        <div class="health-log-list">
+          <div class="health-log">
+            <div class="hlog-icon" style="background:#FEF3E4">&#9999;</div>
+            <div class="hlog-info"><div class="hlog-title">降压药</div><div class="hlog-meta">早饭后 · 氨氯地平 1片</div></div>
+            <div class="hlog-status good">已完成</div>
+          </div>
+          <div class="health-log">
+            <div class="hlog-icon" style="background:#E8EFDE">&#9999;</div>
+            <div class="hlog-info"><div class="hlog-title">晨练太极拳</div><div class="hlog-meta">30分钟 · 公园</div></div>
+            <div class="hlog-status good">已完成</div>
+          </div>
+          <div class="health-log">
+            <div class="hlog-icon" style="background:#FDE8EC">&#9999;</div>
+            <div class="hlog-info"><div class="hlog-title">测血压</div><div class="hlog-meta">早晨 · 128/82 mmHg</div></div>
+            <div class="hlog-status good">正常</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="text-align:center;padding:6px 12px 4px">
+        <button onclick="alert('用药提醒已设置，到点会提醒您，同时通知女儿')" style="background:#FFFDF9;border:1px solid #EBDFCD;border-radius:14px;padding:12px 24px;font-size:14px;color:#7A6652;cursor:pointer;width:100%">&#9999; 添加用药提醒（也通知女儿）</button>
+      </div>
+      <div class="spacer"></div>
+      <div class="bottom-nav">
+        <div class="nav-item" onclick="navE('p-home')"><span class="nav-icon">&#9999;</span>首页</div>
+        <div class="nav-item active"><span class="nav-icon">&#9999;</span>健康</div>
+        <div class="nav-item" onclick="navE('p-location')"><span class="nav-icon">&#9999;</span>位置</div>
+        <div class="nav-item" onclick="navE('p-friends')"><span class="nav-icon">&#9999;</span>老友圈</div>
+        <div class="nav-item" onclick="navE('p-settings')"><span class="nav-icon">&#9999;</span>设置</div>
+      </div>
+    </div>
+
+    <!-- GPS定位追踪 -->
+    <div class="page" id="p-location">
+      <div class="header-warm">
+        <div class="header-title-warm">&#9999; 位置安全</div>
+        <div class="header-sub-warm">子女随时知道您在哪里</div>
+      </div>
+
+      <div class="loc-map">
+        <div class="loc-map-bg">
+          <div class="loc-roads">
+            <div class="loc-road" style="top:40px;left:0;right:0;height:3px"></div>
+            <div class="loc-road" style="top:100px;left:0;right:0;height:3px"></div>
+            <div class="loc-road" style="top:160px;left:0;right:0;height:3px"></div>
+            <div class="loc-road" style="top:30px;left:170px;width:3px;bottom:0"></div>
+            <div class="loc-road" style="top:80px;left:60px;width:3px;bottom:20px"></div>
+          </div>
+          <div style="position:absolute;top:60px;left:60px;font-size:20px">&#9999; 朝阳公园</div>
+          <div style="position:absolute;top:25px;left:180px;font-size:16px">&#9999; 第三社区</div>
+          <div style="position:absolute;top:180px;left:100px;font-size:14px">&#9999; 建行ATM</div>
+          <div class="loc-pin" id="locPin">
+            <div class="loc-pin-dot"></div>
+            <div class="loc-pin-shadow"></div>
+          </div>
+          <div style="position:absolute;top:100px;right:40px;background:white;border-radius:10px;padding:6px 10px;font-size:11px;color:#4A3628;box-shadow:0 1px 4px rgba(0,0,0,0.08)">安全围栏区域</div>
+        </div>
+        <div class="loc-info-overlay">
+          <div class="loc-addr">&#9999; 朝阳区朝阳公园南门附近</div>
+          <div class="loc-updated">&#9999; 1分钟前更新 · 女儿可查看</div>
+          <div class="battery-indicator" style="margin-top:4px">
+            电量 <span class="battery-bar good"><span class="battery-fill good" style="width:75%"></span></span> 76%
+          </div>
+        </div>
+      </div>
+
+      <div class="stat-row">
+        <div class="stat-card">
+          <div class="stat-icon">&#9999;</div>
+          <div class="stat-label">安全围栏</div>
+          <div class="stat-val" style="color:#639922">正常</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">&#9999;</div>
+          <div class="stat-label">今日出行</div>
+          <div class="stat-val">3.2km</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">&#9999;</div>
+          <div class="stat-label">停留时间</div>
+          <div class="stat-val">35分钟</div>
+        </div>
+      </div>
+
+      <div class="alert-card info">
+        <div class="alert-icon">&#9999;</div>
+        <div class="alert-body">
+          <div class="alert-title">位置已同步给女儿</div>
+          <div class="alert-desc">女儿小芳刚刚查看了您的位置</div>
+        </div>
+        <div class="alert-action" onclick="alert('已确认')">知道了</div>
+      </div>
+
+      <button class="big-btn red" style="margin-top:4px" onclick="navE('p-sos')">&#9999; 紧急求助 SOS</button>
+
+      <div class="sec-label">今日出行记录</div>
+      <div class="history-timeline">
+        <div class="timeline-item">
+          <div class="tl-dot home"></div>
+          <div class="tl-info"><div class="tl-addr">家中出发</div><div class="tl-time">07:30</div></div>
+        </div>
+        <div class="timeline-item">
+          <div class="tl-dot out"></div>
+          <div class="tl-info"><div class="tl-addr">朝阳公园太极拳</div><div class="tl-time">08:00 · 停留45分钟</div></div>
+        </div>
+        <div class="timeline-item">
+          <div class="tl-dot out"></div>
+          <div class="tl-info"><div class="tl-addr">社区菜市场</div><div class="tl-time">09:00 · 停留25分钟</div></div>
+        </div>
+        <div class="timeline-item">
+          <div class="tl-dot out"></div>
+          <div class="tl-info"><div class="tl-addr">朝阳公园南门</div><div class="tl-time">09:30 · 当前位置</div></div>
+        </div>
+      </div>
+
+      <button class="big-btn gold" style="margin-top:8px" onclick="navE('p-geofence')">&#9999; 设置安全围栏</button>
+
+      <div class="spacer"></div>
+      <div class="bottom-nav">
+        <div class="nav-item" onclick="navE('p-home')"><span class="nav-icon">&#9999;</span>首页</div>
+        <div class="nav-item" onclick="navE('p-health')"><span class="nav-icon">&#9999;</span>健康</div>
+        <div class="nav-item active"><span class="nav-icon">&#9999;</span>位置</div>
+        <div class="nav-item" onclick="navE('p-friends')"><span class="nav-icon">&#9999;</span>老友圈</div>
+        <div class="nav-item" onclick="navE('p-settings')"><span class="nav-icon">&#9999;</span>设置</div>
+      </div>
+    </div>
+
+    <!-- SOS紧急求助 -->
+    <div class="page" id="p-sos">
+      <div class="header-bar">
+        <button class="back-btn" onclick="navE('p-location')">&larr; 返回</button>
+        <span style="font-size:18px;font-weight:500;color:#5C4033">紧急求助</span>
+      </div>
+
+      <div class="sos-card" style="background:#FCEBEB;border:1px solid #F7C1C1" id="sosCard">
+        <div class="sos-inst">长按红色按钮3秒<br>将自动发送位置给紧急联系人<br>并拨打120急救电话</div>
+        <button class="sos-big-btn armed" style="background:#D85A30" id="sosBtn"
+          onmousedown="sosStart()" onmouseup="sosCancel()" onmouseleave="sosCancel()"
+          ontouchstart="sosStart()" ontouchend="sosCancel()" ontouchcancel="sosCancel()">
+          SOS
+        </button>
+        <div style="font-size:13px;color:#D85A30;margin-top:12px;font-weight:500" id="sosTimer">按住3秒触发求助</div>
+      </div>
+
+      <div class="alert-card danger">
+        <div class="alert-icon">&#9999;</div>
+        <div class="alert-body">
+          <div class="alert-title">SOS触发后会自动</div>
+          <div class="alert-desc">&#9999; 发送实时位置给女儿小芳 · &#9999; 拨打120急救 · &#9999; 共享位置给紧急联系人</div>
+        </div>
+      </div>
+
+      <div class="tip-box">
+        <div class="tip-title">SOS快捷方式</div>
+        <div class="tip-body">连续按手机电源键5次，可在任何界面触发紧急求助，无需打开APP。</div>
+      </div>
+
+      <div style="margin:12px;background:#FFFDF9;border-radius:16px;padding:16px;border:0.5px solid #F0E6D6">
+        <div style="font-size:14px;font-weight:500;color:#5C4033;margin-bottom:10px">紧急联系人</div>
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">
+          <div class="fm-avatar" style="background:#E8EFDE;width:40px;height:40px;font-size:20px">&#9999;</div>
+          <div style="flex:1"><div style="font-size:14px;font-weight:500;color:#4A3628">女儿 小芳</div><div style="font-size:12px;color:#A8927D">138****6789</div></div>
+          <span style="font-size:12px;color:#A8927D">主要联系人</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px">
+          <div class="fm-avatar" style="background:#FDE8EC;width:40px;height:40px;font-size:20px">&#9999;</div>
+          <div style="flex:1"><div style="font-size:14px;font-weight:500;color:#4A3628">儿子 小明</div><div style="font-size:12px;color:#A8927D">139****8901</div></div>
+          <span style="font-size:12px;color:#A8927D">备份联系人</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 安全围栏设置 -->
+    <div class="page" id="p-geofence">
+      <div class="header-bar">
+        <button class="back-btn" onclick="navE('p-location')">&larr; 返回</button>
+        <span style="font-size:18px;font-weight:500;color:#5C4033">安全围栏</span>
+      </div>
+
+      <div class="tip-box">
+        <div class="tip-title">什么是安全围栏？</div>
+        <div class="tip-body">在地图上划定一个安全区域。当您走出这个区域时，会自动通知您的子女，防止走失或迷路。</div>
+      </div>
+
+      <div class="geofence-list">
+        <div class="geofence-item">
+          <div class="gf-icon" style="background:#E8EFDE">&#9999;</div>
+          <div class="gf-info">
+            <div class="gf-name">小区周边1公里</div>
+            <div class="gf-range">半径1.0km · 超出自动提醒女儿</div>
+          </div>
+          <button class="gf-toggle on" onclick="toggleGf(this)"></button>
+        </div>
+        <div class="geofence-item">
+          <div class="gf-icon" style="background:#E3ECF8">&#9999;</div>
+          <div class="gf-info">
+            <div class="gf-name">朝阳公园区域</div>
+            <div class="gf-range">半径1.5km · 常去地点</div>
+          </div>
+          <button class="gf-toggle on" onclick="toggleGf(this)"></button>
+        </div>
+        <div class="geofence-item">
+          <div class="gf-icon" style="background:#FDE8EC">&#9999;</div>
+          <div class="gf-info">
+            <div class="gf-name">女儿家周边</div>
+            <div class="gf-range">半径0.8km · 已开启</div>
+          </div>
+          <button class="gf-toggle on" onclick="toggleGf(this)"></button>
+        </div>
+      </div>
+
+      <button class="big-btn" onclick="alert('新围栏已添加')" style="margin-top:4px">+ 添加新围栏</button>
+
+      <div class="family-panel" style="margin-top:4px">
+        <div class="family-panel-title">围栏告警设置</div>
+        <div style="padding:0 16px 14px">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-top:0.5px solid #F5EDE3">
+            <span style="font-size:14px;color:#4A3628">超出围栏时通知女儿</span>
+            <button class="gf-toggle on" onclick="toggleGf(this)"></button>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-top:0.5px solid #F5EDE3">
+            <span style="font-size:14px;color:#4A3628">低电量自动提醒子女</span>
+            <button class="gf-toggle on" onclick="toggleGf(this)"></button>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-top:0.5px solid #F5EDE3">
+            <span style="font-size:14px;color:#4A3628">长时间不动提醒</span>
+            <span style="font-size:12px;color:#A8927D">超过2小时</span>
+          </div>
+        </div>
+      </div>
+      <div class="spacer"></div>
+    </div>
+
+    <!-- 家庭连接 -->
+    <div class="page" id="p-family">
+      <div class="header-bar">
+        <button class="back-btn" onclick="navE('p-home')">&larr; 返回</button>
+        <span style="font-size:18px;font-weight:500;color:#5C4033">家庭连接</span>
+      </div>
+
+      <div style="text-align:center;padding:16px 0 6px;font-size:13px;color:#A8927D">让子女扫描二维码，即可连接</div>
+      <div class="qr-section">
+        <div class="qr-box">&#9999;</div>
+        <div style="font-size:14px;color:#5C4033;margin-bottom:10px">或用邀请码连接</div>
+        <div class="invite-code-box">
+          <span class="invite-code-num">A3F-8K2</span>
+          <span class="invite-code-copy" onclick="alert('邀请码已复制')">复制</span>
+        </div>
+      </div>
+
+      <div class="family-panel">
+        <div class="family-panel-title">已连接的家人</div>
+        <div class="family-member">
+          <div class="fm-avatar" style="background:#E8EFDE">&#9999;</div>
+          <div class="fm-info"><div class="fm-name">小芳（女儿）</div><div class="fm-relation">主联系人</div></div>
+          <span class="fm-badge active">&#9999; 已连接</span>
+        </div>
+        <div class="family-member">
+          <div class="fm-avatar" style="background:#E3ECF8">&#9999;</div>
+          <div class="fm-info"><div class="fm-name">小明（儿子）</div><div class="fm-relation">备用联系人</div></div>
+          <span class="fm-badge active">&#9999; 已连接</span>
+        </div>
+      </div>
+
+      <div class="family-panel" style="margin-top:4px">
+        <div class="family-panel-title">同步给子女的数据</div>
+        <div style="padding:0 16px 14px">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-top:0.5px solid #F5EDE3">
+            <span style="font-size:14px;color:#4A3628">&#9999; 健康打卡数据</span>
+            <button class="gf-toggle on" onclick="toggleGf(this)"></button>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-top:0.5px solid #F5EDE3">
+            <span style="font-size:14px;color:#4A3628">&#9999; 实时位置</span>
+            <button class="gf-toggle on" onclick="toggleGf(this)"></button>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-top:0.5px solid #F5EDE3">
+            <span style="font-size:14px;color:#4A3628">&#9999; 用药提醒状态</span>
+            <button class="gf-toggle on" onclick="toggleGf(this)"></button>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-top:0.5px solid #F5EDE3">
+            <span style="font-size:14px;color:#4A3628">&#9999; 心情视频</span>
+            <button class="gf-toggle on" onclick="toggleGf(this)"></button>
+          </div>
+        </div>
+      </div>
+      <div class="spacer"></div>
+    </div>
+
+    <!-- 照片选择页 -->
+    <div class="page" id="p-photo">
+      <div class="header-bar"><button class="back-btn" onclick="navE('p-home')">&larr; 返回</button><span style="font-size:18px;font-weight:500;color:#5C4033">选一张照片</span></div>
+      <div class="upload-zone" onclick="navE('p-gen')">
+        <div class="upload-icon">&#9999;</div>
+        <div class="upload-title">点这里从相册选一张</div>
+        <div class="upload-sub">挑一张今天最满意的照片</div>
+      </div>
+      <div style="text-align:center;color:#C8B89A;font-size:13px;padding:6px 0">最近照片</div>
+      <div class="photo-grid">
+        <div class="photo-cell" style="background:#FEF3E4" onclick="navE('p-gen')">&#9999;</div>
+        <div class="photo-cell" style="background:#E8EFDE" onclick="navE('p-gen')">&#9999;</div>
+        <div class="photo-cell" style="background:#FDE8EC" onclick="navE('p-gen')">&#9999;</div>
+        <div class="photo-cell" style="background:#E3ECF8" onclick="navE('p-gen')">&#9999;</div>
+        <div class="photo-cell" style="background:#F5E8F0" onclick="navE('p-gen')">&#9999;</div>
+        <div class="photo-cell" style="background:#FFF9E4" onclick="navE('p-gen')">&#9999;</div>
+      </div>
+      <button class="big-btn" onclick="navE('p-gen')">用这张照片生成视频</button>
+    </div>
+
+    <!-- 视频上传页 -->
+    <div class="page" id="p-video">
+      <div class="header-bar"><button class="back-btn" onclick="navE('p-home')">&larr; 返回</button><span style="font-size:18px;font-weight:500;color:#5C4033">录一段视频</span></div>
+      <div class="upload-zone" onclick="navE('p-gen')">
+        <div class="upload-icon">&#9999;</div>
+        <div class="upload-title">点这里选一段视频上传</div>
+        <div class="upload-sub">建议3分钟以内，AI会自动提取精彩片段</div>
+      </div>
+      <div class="tip-box">
+        <div class="tip-title">AI能帮您做什么</div>
+        <div class="tip-body">自动识别视频里的美好时刻，提取最美画面，配上温暖的音乐和文字，生成一个30秒的精致短视频。</div>
+      </div>
+      <button class="big-btn" onclick="navE('p-gen')">开始AI处理</button>
+    </div>
+
+    <!-- 语音录入页 -->
+    <div class="page" id="p-voice">
+      <div class="header-bar"><button class="back-btn" onclick="navE('p-home')">&larr; 返回</button><span style="font-size:18px;font-weight:500;color:#5C4033">说说心里话</span></div>
+      <div style="padding:20px 16px;display:flex;flex-direction:column;align-items:center">
+        <div style="background:#FFFDF9;border-radius:18px;border:.5px solid #F0E6D6;padding:28px 16px;width:100%;display:flex;flex-direction:column;align-items:center">
+          <div id="rec-btn" style="width:96px;height:96px;border-radius:50%;background:#E8A87C;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:40px;border:none;transition:background 0.2s" onclick="toggleRec()">&#9999;</div>
+          <div id="rec-status" style="font-size:17px;font-weight:500;color:#4A3628;margin-top:14px">点一下开始说话</div>
+          <div style="font-size:13px;color:#A8927D;margin-top:6px">说完了再点一下停止</div>
+          <div id="rec-text" style="display:none;width:100%;margin-top:14px;background:#FCF8F2;border-radius:12px;padding:14px;font-size:16px;color:#5C4033;min-height:56px;line-height:1.8"></div>
+        </div>
+        <div class="tip-box" style="margin-top:14px;width:100%">
+          <div class="tip-title">您可以这样说</div>
+          <div class="tip-body">"今天天气真好，出去走了走..."<br>"孩子们来看我了，很开心..."<br>"想起了年轻时候的事..."</div>
+        </div>
+      </div>
+      <button class="big-btn" onclick="navE('p-gen')">用录音生成视频</button>
+    </div>
+
+    <!-- AI生成中 -->
+    <div class="page" id="p-gen">
+      <div class="header-warm"><div class="header-title-warm">AI创作中</div><div class="header-sub-warm">请稍等约30秒</div></div>
+      <div class="gen-box">
+        <div class="gen-item"><div class="gen-dot done" id="g1">&#9999;</div><div><div class="gen-label">理解您的心情</div><div class="gen-sub">分析内容，识别情绪色彩</div></div></div>
+        <div class="gen-item"><div class="gen-dot running" id="g2">2</div><div><div class="gen-label">创作视频画面</div><div class="gen-sub">AI绘制符合心情的画面</div></div></div>
+        <div class="gen-item"><div class="gen-dot wait" id="g3">3</div><div><div class="gen-label">匹配背景音乐</div><div class="gen-sub">智能推荐温暖旋律</div></div></div>
+        <div class="gen-item"><div class="gen-dot wait" id="g4">4</div><div><div class="gen-label">生成精美字幕</div><div class="gen-sub">自动撰写暖心文案</div></div></div>
+      </div>
+      <div class="prog-bar"><div class="prog-fill" id="prog" style="width:35%"></div></div>
+      <div class="prog-text" id="progT">AI正在创作画面...</div>
+      <div class="style-card">
+        <div style="font-size:13px;font-weight:500;color:#4A3628">选个喜欢的风格</div>
+        <div class="style-chips">
+          <div class="style-chip sel" onclick="selSty(this)">温馨家庭</div>
+          <div class="style-chip" onclick="selSty(this)">自然田园</div>
+          <div class="style-chip" onclick="selSty(this)">怀旧温暖</div>
+          <div class="style-chip" onclick="selSty(this)">简约清新</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 结果页 -->
+    <div class="page" id="p-result">
+      <div class="header-warm"><div class="header-title-warm">视频创作完成</div><div class="header-sub-warm">点击播放预览吧</div></div>
+      <div class="vid-preview">
+        <div class="vid-bg" style="background:#3D2C20"></div>
+        <div class="vid-overlay">
+          <div style="font-size:56px;margin-bottom:8px">&#9999;</div>
+          <div style="color:rgba(255,255,255,.9);font-size:15px;font-weight:500;margin-bottom:6px">今天晒太阳散步，很舒服</div>
+          <div class="play-round">&#9999;</div>
+        </div>
+      </div>
+      <div class="tag-row"><span class="tag-item">开心</span><span class="tag-item">日常</span><span class="tag-item">阳光</span></div>
+      <div class="cap-box">"午后的阳光很暖，慢慢走在小区的林荫道上，心里特别平静。这种简单的快乐，值得被记住。"</div>
+      <div class="share-label">分享到</div>
+      <div class="share-row">
+        <button class="share-btn" style="background:#07c160;color:white">微信子女</button>
+        <button class="share-btn" style="background:#1878f3;color:white">朋友圈</button>
+        <button class="share-btn" style="background:#C4A265;color:white" onclick="navE('p-friends')">老友圈</button>
+        <button class="share-btn" style="background:#F0E6D6;color:#7A6652">保存</button>
+      </div>
+      <button class="big-btn" onclick="navE('p-home')">再创作一个</button>
+      <div class="spacer"></div>
+    </div>
+
+    <!-- 老友圈 -->
+    <div class="page" id="p-friends">
+      <div class="header-warm"><div class="header-title-warm">&#9999; 老友圈</div><div class="header-sub-warm">老朋友的日常，都在这里</div></div>
+      <div class="friend-feed">
+        <div class="friend-post">
+          <div class="fp-hdr">
+            <div class="fp-avatar" style="background:#E8EFDE">&#9999;</div>
+            <div class="fp-name-row"><div class="fp-name">老张</div><div class="fp-time">1小时前</div></div>
+          </div>
+          <div class="fp-body">
+            <div class="fp-vid" style="background:#FEF3E4">&#9999;</div>
+            <div class="fp-text">今早去公园打太极，天气真好，心情舒畅！</div>
+            <div class="fp-actions">
+              <span class="fp-act" onclick="alert('已点赞')">&#9999; 8</span>
+              <span class="fp-act" onclick="alert('已留言')">&#9999; 3</span>
+              <span class="fp-act" onclick="alert('已分享')">&#9999; 分享</span>
+            </div>
+          </div>
+        </div>
+        <div class="friend-post">
+          <div class="fp-hdr">
+            <div class="fp-avatar" style="background:#FDE8EC">&#9999;</div>
+            <div class="fp-name-row"><div class="fp-name">李阿姨</div><div class="fp-time">3小时前</div></div>
+          </div>
+          <div class="fp-body">
+            <div class="fp-vid" style="background:#E3ECF8">&#9999;</div>
+            <div class="fp-text">今天给老伴做了红烧肉，他吃得可香了！</div>
+            <div class="fp-actions">
+              <span class="fp-act" onclick="alert('已点赞')">&#9999; 15</span>
+              <span class="fp-act" onclick="alert('已留言')">&#9999; 5</span>
+              <span class="fp-act" onclick="alert('已分享')">&#9999; 分享</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="spacer"></div>
+      <div class="bottom-nav">
+        <div class="nav-item" onclick="navE('p-home')"><span class="nav-icon">&#9999;</span>首页</div>
+        <div class="nav-item" onclick="navE('p-health')"><span class="nav-icon">&#9999;</span>健康</div>
+        <div class="nav-item" onclick="navE('p-location')"><span class="nav-icon">&#9999;</span>位置</div>
+        <div class="nav-item active"><span class="nav-icon">&#9999;</span>老友圈</div>
+        <div class="nav-item" onclick="navE('p-settings')"><span class="nav-icon">&#9999;</span>设置</div>
+      </div>
+    </div>
+
+    <!-- 设置页 -->
+    <div class="page" id="p-settings">
+      <div class="header-warm"><div class="header-title-warm">&#9999; 设置</div><div class="header-sub-warm">管理您的账户和隐私</div></div>
+      <div style="padding:6px 12px;display:flex;flex-direction:column;gap:6px">
+        <div style="background:#FFFDF9;border-radius:14px;padding:14px 16px;border:0.5px solid #F0E6D6;cursor:pointer" onclick="navE('p-family')">
+          <div style="display:flex;align-items:center;gap:10px">
+            <span style="font-size:24px">&#9999;</span>
+            <div style="flex:1"><div style="font-size:15px;font-weight:500;color:#4A3628">家庭连接</div><div style="font-size:12px;color:#A8927D">管理子女连接和同步权限</div></div>
+            <span style="color:#C0B09A">&gt;</span>
+          </div>
+        </div>
+        <div style="background:#FFFDF9;border-radius:14px;padding:14px 16px;border:0.5px solid #F0E6D6;cursor:pointer" onclick="navE('p-geofence')">
+          <div style="display:flex;align-items:center;gap:10px">
+            <span style="font-size:24px">&#9999;</span>
+            <div style="flex:1"><div style="font-size:15px;font-weight:500;color:#4A3628">安全围栏</div><div style="font-size:12px;color:#A8927D">设置位置安全区域</div></div>
+            <span style="color:#C0B09A">&gt;</span>
+          </div>
+        </div>
+        <div style="background:#FFFDF9;border-radius:14px;padding:14px 16px;border:0.5px solid #F0E6D6;cursor:pointer" onclick="alert('隐私设置')">
+          <div style="display:flex;align-items:center;gap:10px">
+            <span style="font-size:24px">&#9999;</span>
+            <div style="flex:1"><div style="font-size:15px;font-weight:500;color:#4A3628">隐私设置</div><div style="font-size:12px;color:#A8927D">管理位置和健康数据分享</div></div>
+            <span style="color:#C0B09A">&gt;</span>
+          </div>
+        </div>
+      </div>
+      <div class="spacer"></div>
+      <div class="bottom-nav">
+        <div class="nav-item" onclick="navE('p-home')"><span class="nav-icon">&#9999;</span>首页</div>
+        <div class="nav-item" onclick="navE('p-health')"><span class="nav-icon">&#9999;</span>健康</div>
+        <div class="nav-item" onclick="navE('p-location')"><span class="nav-icon">&#9999;</span>位置</div>
+        <div class="nav-item" onclick="navE('p-friends')"><span class="nav-icon">&#9999;</span>老友圈</div>
+        <div class="nav-item active"><span class="nav-icon">&#9999;</span>设置</div>
+      </div>
+    </div>
+
+    <!-- SOS确认弹窗 -->
+    <div class="modal-overlay" id="sosModal">
+      <div class="modal-card">
+        <div class="modal-title">&#9999; 紧急求助已触发</div>
+        <div class="modal-body">已向女儿小芳发送位置和求助信息<br>正在拨打120急救电话...</div>
+        <div class="modal-btns">
+          <button class="modal-btn secondary" onclick="sosDismiss()">误触了，取消</button>
+          <button class="modal-btn primary" onclick="alert('求助已发送，请保持电话畅通')">确认求助</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ================ 子女端手机（查看父母数据） ================ -->
+<div class="phone" id="childPhone">
+  <div class="notch"></div>
+  <div class="status-bar"><span>9:41</span><span>5G</span></div>
+  <div class="screen">
+
+    <div class="page active" id="cp-dashboard">
+      <div class="header-warm">
+        <div class="header-title-warm">&#9999; 守护爸妈</div>
+        <div class="header-sub-warm">实时了解爸妈的健康和位置</div>
+      </div>
+
+      <div class="child-view-tabs">
+        <button class="child-view-tab sel" onclick="switchChildTab(this,'v-health')">&#9999; 健康</button>
+        <button class="child-view-tab" onclick="switchChildTab(this,'v-location')">&#9999; 位置</button>
+        <button class="child-view-tab" onclick="switchChildTab(this,'v-alerts')">&#9999; 提醒</button>
+      </div>
+
+      <div id="v-health" style="display:block">
+        <!-- 爸爸 -->
+        <div class="health-today" style="margin:8px 12px">
+          <div class="health-hdr">
+            <span class="health-date" style="display:flex;align-items:center;gap:8px">&#9999; 爸爸</span>
+            <span class="sync-badge synced">&#9999; 刚刚同步</span>
+          </div>
+          <div class="health-grid" style="margin-bottom:0">
+            <div class="health-item" style="border:none;background:transparent">
+              <div class="health-icon">&#9999;</div>
+              <div class="health-label">心情</div>
+              <div class="health-val">愉快</div>
+            </div>
+            <div class="health-item" style="border:none;background:transparent">
+              <div class="health-icon">&#9999;</div>
+              <div class="health-label">血压</div>
+              <div class="health-val">128<span class="health-unit">/82</span></div>
+            </div>
+            <div class="health-item" style="border:none;background:transparent">
+              <div class="health-icon">&#9999;</div>
+              <div class="health-label">用药</div>
+              <div class="health-val" style="color:#639922">已服用</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 妈妈 -->
+        <div class="health-today" style="margin:4px 12px">
+          <div class="health-hdr">
+            <span class="health-date" style="display:flex;align-items:center;gap:8px">&#9999; 妈妈</span>
+            <span class="sync-badge synced">&#9999; 2小时前</span>
+          </div>
+          <div class="health-grid" style="margin-bottom:0">
+            <div class="health-item" style="border:none;background:transparent">
+              <div class="health-icon">&#9999;</div>
+              <div class="health-label">心情</div>
+              <div class="health-val">开心</div>
+            </div>
+            <div class="health-item" style="border:none;background:transparent">
+              <div class="health-icon">&#9999;</div>
+              <div class="health-label">血压</div>
+              <div class="health-val">135<span class="health-unit">/88</span></div>
+            </div>
+            <div class="health-item" style="border:none;background:transparent">
+              <div class="health-icon">&#9999;</div>
+              <div class="health-label">步数</div>
+              <div class="health-val">3,810</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="v-location" style="display:none">
+        <div class="loc-map" style="height:200px">
+          <div class="loc-map-bg">
+            <div class="loc-roads">
+              <div class="loc-road" style="top:50px;left:0;right:0;height:3px"></div>
+              <div class="loc-road" style="top:110px;left:0;right:0;height:3px"></div>
+              <div class="loc-road" style="left:160px;width:3px;top:0;bottom:0"></div>
+            </div>
+            <div class="loc-pin" style="top:95px;left:160px;animation:none">
+              <div class="loc-pin-dot"></div>
+              <div class="loc-pin-shadow"></div>
+            </div>
+            <div style="position:absolute;top:145px;right:40px;background:white;border-radius:8px;padding:3px 8px;font-size:10px;color:#4A3628">安全围栏</div>
+          </div>
+          <div class="loc-info-overlay">
+            <div class="loc-addr" style="font-size:13px">&#9999; 爸爸在朝阳公园南门附近</div>
+            <div class="loc-updated">1分钟前更新</div>
+            <div style="display:flex;align-items:center;gap:4px;margin-top:2px;font-size:11px;color:#A8927D">
+              <span class="battery-indicator">电量 76%</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="stat-row">
+          <div class="stat-card" onclick="alert('导航到爸爸位置')">
+            <div class="stat-icon">&#9999;</div>
+            <div class="stat-label">导航前往</div>
+          </div>
+          <div class="stat-card" onclick="alert('已拨打')">
+            <div class="stat-icon">&#9999;</div>
+            <div class="stat-label">打电话</div>
+          </div>
+          <div class="stat-card" onclick="alert('消息已发送')">
+            <div class="stat-icon">&#9999;</div>
+            <div class="stat-label">发消息</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="v-alerts" style="display:none">
+        <div class="alert-card warning">
+          <div class="alert-icon">&#9999;</div>
+          <div class="alert-body">
+            <div class="alert-title">妈妈血压偏高</div>
+            <div class="alert-desc">今日测量135/88，略高于平时。建议关注休息情况。</div>
+          </div>
+          <button class="alert-action" onclick="alert('已打电话关心')">打电话</button>
+        </div>
+        <div class="alert-card info">
+          <div class="alert-icon">&#9999;</div>
+          <div class="alert-body">
+            <div class="alert-title">爸爸晚上用药提醒</div>
+            <div class="alert-desc">降压药（氨氯地平）晚上8点服用</div>
+          </div>
+          <button class="alert-action" onclick="alert('已提醒')">提醒一下</button>
+        </div>
+        <div class="alert-card info">
+          <div class="alert-icon">&#9999;</div>
+          <div class="alert-body">
+            <div class="alert-title">爸爸新视频</div>
+            <div class="alert-desc">刚刚发布了心情视频"今天晒太阳散步，很舒服"</div>
+          </div>
+          <button class="alert-action" onclick="alert('已查看')">去看看</button>
+        </div>
+
+        <div class="family-panel" style="margin-top:6px">
+          <div class="family-panel-title">通知设置</div>
+          <div style="padding:0 16px 14px">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-top:0.5px solid #F5EDE3">
+              <span style="font-size:13px;color:#4A3628">&#9999; 健康异常立即通知</span>
+              <button class="gf-toggle on" onclick="toggleGf(this)"></button>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-top:0.5px solid #F5EDE3">
+              <span style="font-size:13px;color:#4A3628">&#9999; 超出安全围栏提醒</span>
+              <button class="gf-toggle on" onclick="toggleGf(this)"></button>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-top:0.5px solid #F5EDE3">
+              <span style="font-size:13px;color:#4A3628">&#9999; 漏服药物提醒</span>
+              <button class="gf-toggle on" onclick="toggleGf(this)"></button>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-top:0.5px solid #F5EDE3">
+              <span style="font-size:13px;color:#4A3628">&#9999; 低电量提醒（低于20%）</span>
+              <button class="gf-toggle on" onclick="toggleGf(this)"></button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="text-align:center;padding:10px">
+        <button class="big-btn gold" style="margin:0;width:auto;padding:14px 32px" onclick="alert('已邀请，等待对方确认')">+ 添加要守护的家人</button>
+      </div>
+      <div class="spacer"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ================ 设计说明面板 ================ -->
+<div style="width:280px;background:#FFFDF9;border-radius:16px;padding:18px;border:.5px solid #F0E6D6;font-size:13px;color:#5C4033;line-height:1.8">
+  <div style="font-size:15px;font-weight:500;color:#5C4033;margin-bottom:12px;padding-bottom:10px;border-bottom:.5px solid #F0E6D6">V3 新增功能说明</div>
+
+  <div style="margin-bottom:10px;font-weight:500;color:#C0603A;font-size:13px">&#9999; 健康数据子女同步</div>
+  <div style="margin-bottom:14px">
+    老人端健康打卡后自动同步到子女手机。子女可实时查看心情、血压、用药、步数、睡眠等六维健康数据。异常自动告警（血压偏高/漏服药/心情持续低迷）。
+  </div>
+
+  <div style="margin-bottom:10px;font-weight:500;color:#C0603A;font-size:13px">&#9999; GPS定位防走失</div>
+  <div style="margin-bottom:14px">
+    实时位置追踪 + 电子围栏（离开安全区域即告警）+ SOS一键求助 + 出行轨迹查看 + 低电量自动提醒子女。
+  </div>
+
+  <div style="margin-bottom:10px;font-weight:500;color:#C0603A;font-size:13px">&#9999; 双端演示</div>
+  <div style="margin-bottom:14px">
+    左侧老人端：大字体温暖界面<br>
+    右侧子女端：健康看板+位置追踪+告警中心
+  </div>
+
+  <div style="margin-bottom:10px;font-weight:500;color:#C0603A;font-size:13px">&#9999; 家庭连接</div>
+  <div style="margin-bottom:14px">
+    QR码扫码绑定 + 邀请码连接，可精细化控制哪些数据同步给子女（健康打卡/实时位置/用药提醒/心情视频，均可独立开关）。
+  </div>
+
+  <div style="margin-bottom:10px;font-weight:500;color:#C0603A;font-size:13px">&#9999; 顶部预警</div>
+  <div style="margin-bottom:8px">
+    子女端主动推送异常告警：<br>
+    &#9999; 血压偏高<br>
+    &#9999; 漏服药物<br>
+    &#9999; 长时间不动<br>
+    &#9999; 老人新心情视频
+  </div>
+</div>
+
+</div>
+
+<script>
+function navE(id){
+  var phone = document.getElementById('elderPhone');
+  phone.querySelectorAll('.page').forEach(function(p){p.classList.remove('active')});
+  document.getElementById(id).classList.add('active');
+  if(id==='p-gen') startGen();
+}
+function selMood(el){
+  document.getElementById('elderPhone').querySelectorAll('.mood-chip').forEach(function(c){c.classList.remove('sel')});
+  el.classList.add('sel');
+}
+function selSty(el){
+  document.getElementById('elderPhone').querySelectorAll('.style-chip').forEach(function(c){c.classList.remove('sel')});
+  el.classList.add('sel');
+}
+function pickMood(el){
+  el.parentElement.parentElement.querySelectorAll('.mood-face').forEach(function(f){f.classList.remove('picked')});
+  el.classList.add('picked');
+}
+var ra=false,rt=null;
+function toggleRec(){
+  ra=!ra;
+  var b=document.getElementById('rec-btn'),s=document.getElementById('rec-status'),t=document.getElementById('rec-text');
+  if(ra){
+    b.style.background='#C0603A';b.innerHTML='\u23F9';s.textContent='正在听您说话...';
+    t.style.display='block';t.textContent='今天天气真好...';
+    rt=setTimeout(function(){t.textContent='今天天气真好，出去散了步，小区里的花都开了，心情特别舒畅。'},2000)
+  }else{
+    b.style.background='#E8A87C';b.innerHTML='\uD83C\uDFA4';s.textContent='说完了！可以生成视频了';clearTimeout(rt)
+  }
+}
+var gt=null;
+function startGen(){
+  var p=document.getElementById('prog'),t=document.getElementById('progT'),
+  ss=[{w:'35%',x:'AI正在创作画面...',g2:'running',g3:'wait',g4:'wait'},
+      {w:'60%',x:'画面完成，正在配乐...',g2:'done',g3:'running',g4:'wait'},
+      {w:'82%',x:'音乐就绪，生成字幕...',g2:'done',g3:'done',g4:'running'},
+      {w:'100%',x:'即将完成...',g2:'done',g3:'done',g4:'done'}],
+  i=0;clearInterval(gt);
+  gt=setInterval(function(){
+    if(i<ss.length){
+      var s=ss[i];p.style.width=s.w;t.textContent=s.x;
+      ['g2','g3','g4'].forEach(function(k){
+        var e=document.getElementById(k),c=s[k];
+        e.className='gen-dot '+c;e.textContent=c==='done'?'\u2713':(k==='g2'?'2':k==='g3'?'3':'4');
+      });i++
+    }else{clearInterval(gt);setTimeout(function(){navE('p-result')},700)}
+  },1600)
+}
+var sosTimer=null,sosCount=0;
+function sosStart(){
+  sosCount=0;
+  var el=document.getElementById('sosTimer');
+  el.textContent='按住3秒触发求助...0';
+  el.style.color='#D85A30';
+  sosTimer=setInterval(function(){
+    sosCount++;
+    el.textContent='按住3秒触发求助...'+sosCount;
+    if(sosCount>=3){
+      clearInterval(sosTimer);
+      document.getElementById('sosModal').classList.add('show');
+      document.getElementById('sosBtn').style.background='#a32d2d';
+      el.textContent='求助已触发！';el.style.color='#a32d2d';
+    }
+  },1000);
+}
+function sosCancel(){
+  if(sosTimer)clearInterval(sosTimer);
+  document.getElementById('sosTimer').textContent='按住3秒触发求助';
+  document.getElementById('sosTimer').style.color='#D85A30';
+  document.getElementById('sosBtn').style.background='#D85A30';
+  sosCount=0;
+}
+function sosDismiss(){
+  document.getElementById('sosModal').classList.remove('show');
+  document.getElementById('sosBtn').style.background='#D85A30';
+  document.getElementById('sosTimer').textContent='按住3秒触发求助';
+}
+function toggleGf(el){
+  el.classList.toggle('on');el.classList.toggle('off');
+}
+function switchChildTab(el,vid){
+  el.parentElement.querySelectorAll('.child-view-tab').forEach(function(t){t.classList.remove('sel')});
+  el.classList.add('sel');
+  ['v-health','v-location','v-alerts'].forEach(function(id){
+    document.getElementById(id).style.display=id===vid?'block':'none';
+  });
+}
+</script>
+</body>
+</html>
